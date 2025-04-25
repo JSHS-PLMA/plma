@@ -29,5 +29,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=~/.ssh/known_hosts -p 9988 $SERVER_USER@$SERVER_IP  "
           cd $APP_DIR;
           chmod +x build.sh;
+          ./build.sh;
           
           "

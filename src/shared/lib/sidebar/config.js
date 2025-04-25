@@ -155,6 +155,19 @@ export const config = [
                     },
                 ],
             },
+            {
+                header: {
+                    icon: 'headphones',
+                    name: '기상송 관리',
+                },
+                links: [
+                    {
+                        pathKey: pathKeys.remote.songs.view(),
+                        icon: 'play',
+                        name: '기상송 조회',
+                    },
+                ],
+            },
         ],
     },
     {

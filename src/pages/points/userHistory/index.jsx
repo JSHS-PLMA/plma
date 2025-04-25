@@ -84,9 +84,6 @@ function Points_UserHistory() {
                     ? reason_caption.substring(0, 40) + '...'
                     : reason_caption,
                 moment(act_date).format('YYYY-MM-DD'),
-                <Button variant="danger" size="sm">
-                    이의 제기
-                </Button>,
             ];
         });
 
@@ -128,7 +125,6 @@ function Points_UserHistory() {
             { hidden: true },
             { data: '사유', className: 'dt-reason' },
             { data: '반영일시' },
-            { data: '#', orderable: false },
         ]);
     }
 

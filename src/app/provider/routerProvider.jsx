@@ -33,6 +33,8 @@ import MyDorm_Repair from '~pages/myDorm/repair';
 import Case_Control from '~pages/remote/case/control';
 import Case_History from '~pages/remote/case/history';
 
+import Songs_View from '~pages/remote/songs/view';
+
 import PLMA_Accounts from '~pages/plma/accounts';
 import IAM_Accounts from '~pages/iam/accounts';
 
@@ -76,6 +78,7 @@ const userType = {
         'viewRemoteCaseControl',
         'viewRemoteCaseSchedule',
         'viewRemoteCaseHistory',
+        'viewRemoteSongsView',
 
         'viewPLMAAccounts',
         'viewIAMAccounts',
@@ -130,6 +133,7 @@ const routesWithPermissions = [
 
     { pathKey: pathKeys.remote.case.control(), element: <Case_Control /> },
     { pathKey: pathKeys.remote.case.history(), element: <Case_History /> },
+    { pathKey: pathKeys.remote.songs.view(), element: <Songs_View /> },
 ];
 
 const filteredRoutes = routesWithPermissions

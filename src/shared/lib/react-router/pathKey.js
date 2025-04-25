@@ -30,7 +30,7 @@ export const pathKeys = {
             return {
                 link: pathKeys.points.root().concat('apply/'),
                 permission: 'viewPointsApply',
-            }
+            };
         },
         history() {
             return {
@@ -149,6 +149,17 @@ export const pathKeys = {
                 return {
                     link: pathKeys.remote.case.root().concat('history/'),
                     permission: 'viewRemoteCaseHistory',
+                };
+            },
+        },
+        songs: {
+            root() {
+                return pathKeys.remote.root().concat('songs/');
+            },
+            view() {
+                return {
+                    link: pathKeys.remote.songs.root().concat('view/'),
+                    permission: 'viewRemoteSongsView',
                 };
             },
         },

@@ -4,7 +4,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # nvm 로드
 
 
-git remote set-url origin https://github.com/JSHS-PLMA/plma.git
+git remote set-url origin https://github.com/JSHS-PLMA/points.git
 git pull origin main 
 echo "깃 불러오기 끝"
 

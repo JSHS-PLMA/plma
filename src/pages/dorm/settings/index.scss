@@ -4,59 +4,95 @@
     width: 100%;
     height: 100%;
 
-    .btn {
-        border-radius: 0;
-        padding-inline: 1.25rem;
-        margin-right: 1rem;
+    .table-container {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
     }
 
-    .tableWrap {
+    .btn-group {
+        margin-bottom: 2rem;
+        label {
+            padding-inline: 2rem;
+        }
+    }
+
+    .dorm-options {
+        display: flex;
+        margin-bottom: 1rem;
+        div {
+            margin-right: 1rem;
+        }
+    }
+
+    .table-wrap {
         width: max-content;
         height: auto;
-
-        .dt-layout-row {
-            margin: 0;
-        }
 
         .tableWrapper .tableHeader {
             display: none;
         }
     }
 
-    .remainingExcludedTable {
-        th {
-            color: #ff6565;
+    .btn-wrap {
+        display: flex;
+        justify-content: flex-end;
+        button {
+            margin-right: 0.5rem;
+            border-radius: 0.5rem;
         }
     }
 
-    .studentsGrid {
+    .remaining-students {
+        width: 100%;
+        margin: 0.5rem 0;
+        th {
+            color: #ff6565;
+            border: 1px solid #dee2e6;
+            padding: 0.25rem 0.75rem;
+        }
+
+        border: 1px solid #dee2e6;
+    }
+
+    .students-grid {
         flex-grow: 1;
-        padding: 1rem 1.5rem 0.5rem;
+        padding: 1rem 1.5rem;
         margin: 1.5rem 0 0 2.5rem;
-        border-radius: 0.75rem;
-        border: 1.5px solid black;
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+
         .btn-danger {
             color: #ff6565;
         }
-        .col {
-            button {
-                width: 100%;
-                border-radius: 0.5rem;
-                background-color: #dbdbdb;
-                text-align: center;
-                padding: 0.4rem 0.5rem;
-            }
 
-            strong {
-                color: #ff6565;
-            }
+        .row {
+            margin-bottom: 0.5rem;
+            .col {
+                margin: 0.1rem 0;
+                padding: 0 0.25rem;
 
-            margin: 0.1rem 0;
-            padding: 0 0.2rem;
+                button {
+                    width: 100%;
+                    background-color: #f0f0f0;
+                    border: 1px solid #c2c2c2;
+                    border-radius: 0.5rem;
+                    transition: all 0.3s ease;
+
+                    &:hover {
+                        border-color: #3498db; // 🔹 Blue on hover
+                        background-color: #e3f2fd; // 🔹 Lighter blue background
+                    }
+                }
+
+                strong {
+                    color: #ff6565;
+                }
+            }
         }
     }
 
-    .dormSettingsTable {
+    .dorm-table {
         tr {
             cursor: pointer;
 

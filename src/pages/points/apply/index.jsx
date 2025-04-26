@@ -141,7 +141,8 @@ function Points_Apply() {
         if (!selectedUser) {
             MySwal.fire({
                 icon: 'warning',
-                title: '선택된 학생을 찾을 수 없습니다.',
+                title: '상벌점을 부여할 학생을 선택해 주세요.',
+                width: 600,
             });
             return;
         }
@@ -166,9 +167,7 @@ function Points_Apply() {
             inputs.reasonCaption,
         ];
 
-        const newTableData = [...tableData, newEntry];
-
-        setTableData(newTableData);
+        setTableData((prev) => [...prev, newEntry]);
     };
 
     const handleSelectUser = (e) => {
@@ -503,7 +502,7 @@ function Points_Apply() {
                                 options={{
                                     search: false,
                                 }}
-                                order={[0, 'desc']}
+                                order={[0, 'asc']}
                             />
                         </div>
 
@@ -516,8 +515,9 @@ function Points_Apply() {
                                 if (tableData.length == 0) return;
 
                                 setTableData((prev) => {
-                                    const newTableData = [...prev];
-                                    newTableData.pop();
+                                    const newTableData = prev.filter(
+                                        (row) => row[0] !== prev.length - 1
+                                    );
                                     return newTableData;
                                 });
                             }}

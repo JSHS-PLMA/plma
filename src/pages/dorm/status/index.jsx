@@ -66,110 +66,102 @@ function Dorm_Status() {
     }, []);
 
     return (
-        <>
-            <div id="dorm_status">
-                <Card>
-                    <Card.Header>
-                        <Card.Title>기숙사 현황</Card.Title>
-                    </Card.Header>
-                    <Card.Body>
-                        <div className="d-flex flex-row mb-3">
-                            <div className="me-3">
-                                <Card.Text className="label">연도</Card.Text>
-                                <select
-                                    className="form-select"
-                                    value={year}
-                                    onChange={(e) =>
-                                        setYear(Number(e.target.value))
-                                    }
-                                >
-                                    {Array.from(
-                                        {
-                                            length:
-                                                new Date().getFullYear() - 2024,
-                                        },
-                                        (_, i) => 2025 + i
-                                    ).map((yearOption) => (
-                                        <option
-                                            key={yearOption}
-                                            value={yearOption}
-                                        >
-                                            {yearOption}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="me-3">
-                                <Card.Text className="label">학기</Card.Text>
-                                <select
-                                    className="form-select"
-                                    value={semester}
-                                    onChange={(e) =>
-                                        setSemester(Number(e.target.value))
-                                    }
-                                >
-                                    <option value={1}>1학기</option>
-                                    <option value={2}>2학기</option>
-                                </select>
-                            </div>
-                            <div>
-                                <Card.Text className="label">기숙사</Card.Text>
-                                <select
-                                    className="form-select"
-                                    value={dormName}
-                                    onChange={(e) =>
-                                        setDormName(e.target.value)
-                                    }
-                                >
-                                    <option value="송죽관">송죽관</option>
-                                    <option value="동백관">동백관</option>
-                                </select>
-                            </div>
+        <div id="dorm_status">
+            <Card>
+                <Card.Header>
+                    <Card.Title>기숙사 현황</Card.Title>
+                </Card.Header>
+                <Card.Body>
+                    <div className="d-flex flex-row mb-3">
+                        <div className="me-3">
+                            <Card.Text className="label">연도</Card.Text>
+                            <select
+                                className="form-select"
+                                value={year}
+                                onChange={(e) =>
+                                    setYear(Number(e.target.value))
+                                }
+                            >
+                                {Array.from(
+                                    {
+                                        length: new Date().getFullYear() - 2024,
+                                    },
+                                    (_, i) => 2025 + i
+                                ).map((yearOption) => (
+                                    <option key={yearOption} value={yearOption}>
+                                        {yearOption}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
-
-                        <Card.Text className="label">학년 선택</Card.Text>
-                        <ToggleButtonGroup
-                            type="radio"
-                            name="grade-options"
-                            value={grade}
-                            onChange={(value) => setGrade(value)}
-                        >
-                            {grades.map((x, idx) => {
-                                return (
-                                    <ToggleButton
-                                        key={idx}
-                                        variant={
-                                            idx + 1 == { grade }
-                                                ? 'dark'
-                                                : 'outline-dark'
-                                        }
-                                        id={`grade-btn-${idx + 1}`}
-                                        value={idx + 1}
-                                    >
-                                        {x.name}
-                                    </ToggleButton>
-                                );
-                            })}
-                        </ToggleButtonGroup>
-
-                        <div className="tableWrap">
-                            <br />
-                            <Card.Text className="label">호실 현황</Card.Text>
-                            <DataTable
-                                className="dormStatusTable"
-                                columns={columns}
-                                data={filteredTableData}
-                                order={[0, 'asc']}
-                                options={{
-                                    pagination: false,
-                                    search: false,
-                                }}
-                            />
+                        <div className="me-3">
+                            <Card.Text className="label">학기</Card.Text>
+                            <select
+                                className="form-select"
+                                value={semester}
+                                onChange={(e) =>
+                                    setSemester(Number(e.target.value))
+                                }
+                            >
+                                <option value={1}>1학기</option>
+                                <option value={2}>2학기</option>
+                            </select>
                         </div>
-                    </Card.Body>
-                </Card>
-            </div>
-        </>
+                        <div>
+                            <Card.Text className="label">기숙사</Card.Text>
+                            <select
+                                className="form-select"
+                                value={dormName}
+                                onChange={(e) => setDormName(e.target.value)}
+                            >
+                                <option value="송죽관">송죽관</option>
+                                <option value="동백관">동백관</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <Card.Text className="label">학년 선택</Card.Text>
+                    <ToggleButtonGroup
+                        type="radio"
+                        name="grade-options"
+                        value={grade}
+                        onChange={(value) => setGrade(value)}
+                    >
+                        {grades.map((x, idx) => {
+                            return (
+                                <ToggleButton
+                                    key={idx}
+                                    variant={
+                                        idx + 1 == { grade }
+                                            ? 'dark'
+                                            : 'outline-dark'
+                                    }
+                                    id={`grade-btn-${idx + 1}`}
+                                    value={idx + 1}
+                                >
+                                    {x.name}
+                                </ToggleButton>
+                            );
+                        })}
+                    </ToggleButtonGroup>
+
+                    <div className="table-wrap">
+                        <br />
+                        <Card.Text className="label">호실 현황</Card.Text>
+                        <DataTable
+                            className="dorm-table"
+                            columns={columns}
+                            data={filteredTableData}
+                            order={[0, 'asc']}
+                            options={{
+                                pagination: false,
+                                search: false,
+                            }}
+                        />
+                    </div>
+                </Card.Body>
+            </Card>
+        </div>
     );
 }
 

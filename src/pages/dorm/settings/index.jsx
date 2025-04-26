@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 import DataTable from '~shared/ui/datatable';
+import MySwal from '~shared/ui/sweetalert';
 
 import {
     Card,
@@ -70,43 +71,47 @@ function Dorm_Settings() {
 
     useEffect(() => {
         async function init() {
-            const dormUsers = await getData('/api/dorms');
-            dormUsersRef.current = dormUsers;
-            setDormUsers(dormUsers);
+            try {
+                const dormUsers = await getData('/api/dorms');
+                dormUsersRef.current = dormUsers;
+                setDormUsers(dormUsers);
 
-            const users = await getData('/api/user');
-            usersRef.current = users;
+                const users = await getData('/api/user');
+                usersRef.current = users;
 
-            const dataList = [];
+                const dataList = [];
 
-            for (let i = 0; i < dormUsers.length; i++) {
-                dataList.push([
-                    `${String(dormUsers[i].room_name)}`,
-                    dormUsers[i].room_id,
-                    dormUsers[i].room_grade,
-                    dormUsers[i].year,
-                    dormUsers[i].semester,
-                    dormUsers[i].dorm_name,
-                    dormUsers[i].users[0] ? dormUsers[i].users[0].name : '',
-                    dormUsers[i].users[1] ? dormUsers[i].users[1].name : '',
-                    dormUsers[i].users[2] ? dormUsers[i].users[2].name : '',
-                    dormUsers[i].users[3] ? dormUsers[i].users[3].name : '',
+                for (let i = 0; i < dormUsers.length; i++) {
+                    dataList.push([
+                        `${dormUsers[i].room_name}`,
+                        dormUsers[i].room_id,
+                        dormUsers[i].room_grade,
+                        dormUsers[i].year,
+                        dormUsers[i].semester,
+                        dormUsers[i].dorm_name,
+                        dormUsers[i].users[0] ? dormUsers[i].users[0].name : '',
+                        dormUsers[i].users[1] ? dormUsers[i].users[1].name : '',
+                        dormUsers[i].users[2] ? dormUsers[i].users[2].name : '',
+                        dormUsers[i].users[3] ? dormUsers[i].users[3].name : '',
+                    ]);
+                }
+
+                setColumns([
+                    { data: '호실', className: 'dt-first', orderable: false },
+                    { data: 'room_id', hidden: true },
+                    { data: 'grade', hidden: true },
+                    { data: 'year', hidden: true },
+                    { data: 'semester', hidden: true },
+                    { data: 'dorm_name', hidden: true },
+                    { data: '1반', orderable: false },
+                    { data: '2반', orderable: false },
+                    { data: '3반', orderable: false },
+                    { data: '4반', orderable: false },
                 ]);
+                setTableData(dataList);
+            } catch (error) {
+                console.error(error);
             }
-
-            setColumns([
-                { data: '호실', className: 'dt-first', orderable: false },
-                { data: 'room_id', hidden: true },
-                { data: 'grade', hidden: true },
-                { data: 'year', hidden: true },
-                { data: 'semester', hidden: true },
-                { data: 'dorm_name', hidden: true },
-                { data: '1반', orderable: false },
-                { data: '2반', orderable: false },
-                { data: '3반', orderable: false },
-                { data: '4반', orderable: false },
-            ]);
-            setTableData(dataList);
         }
 
         init();
@@ -193,6 +198,15 @@ function Dorm_Settings() {
     };
 
     const handleSave = async () => {
+        const modalRes = await MySwal.fire({
+            title: '정말로 저장하시겠습니까?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '확인',
+            cancelButtonText: '취소',
+        });
+        if (!modalRes.isConfirmed) return;
+
         const data = dormUsers
             .filter(
                 (room) =>
@@ -215,10 +229,19 @@ function Dorm_Settings() {
         try {
             const res = await putData('/api/dorms', data);
             console.log(res);
+            MySwal.fire({
+                icon: 'success',
+                title: '저장 성공',
+                text: '기숙사 정보를 성공적으로 저장했습니다.',
+            });
         } catch (error) {
             console.error(error);
+            MySwal.fire({
+                icon: 'error',
+                title: '저장 실패',
+                text: '저장 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+            });
         }
-        return;
     };
 
     /// 연/학기/기숙사 바뀔때마다 초기화 (api 요청 X)
@@ -264,18 +287,8 @@ function Dorm_Settings() {
                     <Card.Title>기숙사 관리</Card.Title>
                 </Card.Header>
                 <Card.Body>
-                    {/* <Tabs
-                            id="grade-tabs"
-                            activeKey={grade}
-                            onSelect={(k) => setGrade(k)}
-                            className="mb-3"
-                        >
-                            <Tab eventKey="1" title="1학년"></Tab>
-                            <Tab eventKey="2" title="2학년"></Tab>
-                            <Tab eventKey="3" title="3학년"></Tab>
-                        </Tabs> */}
-                    <div className="d-flex flex-row mb-3">
-                        <div className="me-3">
+                    <div className="dorm-options">
+                        <div>
                             <Card.Text className="label">연도</Card.Text>
                             <select
                                 className="form-select"
@@ -294,7 +307,7 @@ function Dorm_Settings() {
                                 ))}
                             </select>
                         </div>
-                        <div className="me-3">
+                        <div>
                             <Card.Text className="label">학기</Card.Text>
                             <select
                                 className="form-select"
@@ -336,7 +349,7 @@ function Dorm_Settings() {
                                 <ToggleButton
                                     key={idx}
                                     variant={
-                                        idx + 1 == { grade }
+                                        idx + 1 == grade
                                             ? 'dark'
                                             : 'outline-dark'
                                     }
@@ -349,11 +362,11 @@ function Dorm_Settings() {
                         })}
                     </ToggleButtonGroup>
 
-                    <div className="d-flex flex-row mt-4 align-items-start">
-                        <div className="tableWrap">
-                            <div className="tableHeader">
+                    <div className="table-container">
+                        <div className="table-wrap">
+                            <div className="table-header">
                                 남은 제외인원
-                                <table className="table table-bordered remainingExcludedTable">
+                                <table className="remaining-students">
                                     <thead>
                                         <tr>
                                             {['1반', '2반', '3반', '4반'].map(
@@ -404,10 +417,6 @@ function Dorm_Settings() {
                                                                           'excluded'
                                                               ).length
                                                             : null;
-
-                                                    console.log(
-                                                        remainingExcluded
-                                                    );
                                                     return (
                                                         <th key={index}>
                                                             {className}:{' '}
@@ -426,7 +435,7 @@ function Dorm_Settings() {
                             </div>
 
                             <DataTable
-                                className="dormSettingsTable"
+                                className="dorm-table"
                                 columns={columns}
                                 data={filteredTableData}
                                 order={[0, 'asc']}
@@ -438,7 +447,7 @@ function Dorm_Settings() {
                             ></DataTable>
                         </div>
 
-                        <div className="studentsGrid">
+                        <div className="students-grid">
                             {(() => {
                                 const rows = [];
                                 const perRow = 5;
@@ -478,11 +487,7 @@ function Dorm_Settings() {
                                         i + perRow
                                     );
                                     rows.push(
-                                        <Row
-                                            key={'row_' + i}
-                                            className="mb-2"
-                                            xs={5}
-                                        >
+                                        <Row key={'row-' + i} xs={5}>
                                             {rowItems.map((student) => (
                                                 <Col
                                                     key={student.id}
@@ -507,17 +512,12 @@ function Dorm_Settings() {
                         </div>
                     </div>
 
-                    <div className="d-flex justify-content-end">
-                        <Button
-                            variant="primary"
-                            className="me-2"
-                            onClick={handleSave}
-                        >
+                    <div className="btn-wrap">
+                        <Button variant="primary" onClick={handleSave}>
                             저장
                         </Button>
                         <Button
                             variant="danger"
-                            className="me-2"
                             onClick={() => {
                                 const newData = dormUsersRef.current.map(
                                     (room) => {

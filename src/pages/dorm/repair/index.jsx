@@ -162,7 +162,7 @@ function MyDorm_Repair() {
                         <DataTable
                             columns={columns}
                             data={tableData}
-                            order={[1, 'desc']}
+                            order={[0, 'asc']}
                         />
                     </Card.Body>
                 </Card>

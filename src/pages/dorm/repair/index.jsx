@@ -64,15 +64,11 @@ function MyDorm_Repair() {
                 image_url,
             } = x;
             return [
-                // <Form.Check type="checkbox" key={image_url}>
-                //     <Form.Check.Input type="checkbox" isValid />
-                // </Form.Check>,
                 id,
                 room_name,
                 moment(created_at).format('YYYY-MM-DD'),
                 `${user_name} (${user_stuid})`,
                 description,
-                /// status: pending, in_progress, completed
                 <DropdownButton
                     id="dropdown-basic-button"
                     title={

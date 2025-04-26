@@ -166,6 +166,11 @@ export const config = [
                         icon: 'play',
                         name: '기상송 조회',
                     },
+                    {
+                        pathKey: pathKeys.remote.songs.request(),
+                        icon: 'music',
+                        name: '기상송 신청',
+                    },
                 ],
             },
         ],

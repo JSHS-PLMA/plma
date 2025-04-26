@@ -31,7 +31,7 @@ function Songs_View() {
             { data: '길이' },
             { data: '재생', orderable: false },
             { data: '투표수' },
-            { data: '확정여부' },
+            { data: '확정 여부' },
         ]);
     }
 

@@ -110,7 +110,7 @@ function MyDorm_Repair() {
             /// 수리 신청 내역 조회 테이블 컬럼 (형식: {data: '', ...})
             // { data: '선택', orderable: false },
             { data: 'ID' },
-            { data: '방' },
+            { data: '호실' },
             { data: '신청 날짜' },
             { data: '신청자' },
             { data: '상세 내용' },

@@ -71,7 +71,7 @@ function MyPoints_View() {
             const delta = afterplus - beforeplus - (afterminus - beforeminus);
 
             return [
-                '',
+                // '',
                 id,
                 moment(date).format('YYYY-MM-DD'),
                 teacher.name,
@@ -98,7 +98,7 @@ function MyPoints_View() {
 
         setTableData(userHistory);
         setColumns([
-            { data: '선택', orderable: false },
+            // { data: '선택', orderable: false },
             { data: 'ID', className: 'dt-id' },
             { data: '기준일자' },
             { data: '권한자' },
@@ -129,7 +129,7 @@ function MyPoints_View() {
                         </Dropdown.Menu>
                     </Dropdown>
                 ),
-                orderBase: 6,
+                orderBase: 5,
             },
             { hidden: true },
             { data: '사유', className: 'dt-reason' },

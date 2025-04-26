@@ -185,12 +185,6 @@ export const pathKeys = {
                 permission: 'viewIAMAccounts',
             };
         },
-        access() {
-            return {
-                link: pathKeys.iam.root().concat('access/'),
-                permission: 'viewIAMAccess',
-            };
-        },
     },
     school: {
         root() {

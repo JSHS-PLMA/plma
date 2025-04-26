@@ -1,65 +1,259 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-
-import axios from 'axios';
+import { useState, useEffect, useRef } from 'react';
 
 import DataTable from '~shared/ui/datatable';
 import { Card, Button } from 'react-bootstrap';
 
 import './index.scss';
 
-const TITLE = import.meta.env.VITE_TITLE;
+import MySwal from '~shared/ui/sweetalert';
 
-import { getData } from '~shared/scripts/requestData';
+import { getData, putData } from '~shared/scripts/requestData';
+
+function PermissionManager({ accessible, inaccessible, handleChange }) {
+    const [accessiblePermissions, setAccessiblePermissions] =
+        useState(accessible);
+    const [inaccessiblePermissions, setInaccessiblePermissions] =
+        useState(inaccessible);
+    const [filterAccess, setFilterAccess] = useState('');
+    const [filterInaccess, setFilterInaccess] = useState('');
+    console.log(accessiblePermissions, inaccessiblePermissions);
+    useEffect(() => {
+        handleChange({
+            accessiblePermissions,
+            inaccessiblePermissions,
+        });
+    }, [accessiblePermissions, inaccessiblePermissions, handleChange]);
+
+    const handleMoveToAccessible = (permission) => {
+        setInaccessiblePermissions((prev) =>
+            prev.filter((p) => p.id !== permission.id)
+        );
+        setAccessiblePermissions((prev) => [...prev, permission]);
+    };
+
+    const handleMoveToInaccessible = (permission) => {
+        setAccessiblePermissions((prev) =>
+            prev.filter((p) => p.id !== permission.id)
+        );
+        setInaccessiblePermissions((prev) => [...prev, permission]);
+    };
+
+    const moveAllToAccessible = () => {
+        setAccessiblePermissions([
+            ...accessiblePermissions,
+            ...inaccessiblePermissions,
+        ]);
+        setInaccessiblePermissions([]);
+    };
+
+    const moveAllToInaccessible = () => {
+        setInaccessiblePermissions([
+            ...inaccessiblePermissions,
+            ...accessiblePermissions,
+        ]);
+        setAccessiblePermissions([]);
+    };
+
+    const filteredAccess = accessiblePermissions?.filter(({ name }) =>
+        name.toLowerCase().includes(filterAccess.toLowerCase())
+    );
+    const filteredInaccess = inaccessiblePermissions?.filter(({ name }) =>
+        name.toLowerCase().includes(filterInaccess.toLowerCase())
+    );
+
+    return (
+        <>
+            <div className="container">
+                {/* Inaccessible */}
+                <div className="permissionWrap">
+                    <label>접근 불가</label>
+                    <input
+                        type="text"
+                        placeholder="Filter"
+                        value={filterInaccess}
+                        onChange={(e) => setFilterInaccess(e.target.value)}
+                    />
+                    <div className="permissionList">
+                        {filteredInaccess.map(({ id, name }) => (
+                            <div
+                                key={name}
+                                onClick={() =>
+                                    handleMoveToAccessible({ id, name })
+                                }
+                            >
+                                {name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="buttonWrap">
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={moveAllToAccessible}
+                    >
+                        {'>'}
+                    </Button>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={moveAllToInaccessible}
+                    >
+                        {'<'}
+                    </Button>
+                </div>
+
+                {/* Accessible */}
+                <div className="permissionWrap">
+                    <label>접근 가능</label>
+                    <input
+                        type="text"
+                        placeholder="Filter"
+                        value={filterAccess}
+                        onChange={(e) => setFilterAccess(e.target.value)}
+                    />
+                    <div className="permissionList">
+                        {filteredAccess.map(({ id, name }) => (
+                            <div
+                                key={name}
+                                onClick={() =>
+                                    handleMoveToInaccessible({ id, name })
+                                }
+                            >
+                                {name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
 
 function IAM_Accounts() {
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
 
+    const inputsRef = useRef();
+
+    const handleClickEditPermission = async (userId) => {
+        try {
+            const user = await getData(`/api/iam/users/${userId}/permissions`);
+            console.log(user);
+
+            if (!user) {
+                console.error('User not found in permissions data');
+                return;
+            }
+
+            const modalRes = await MySwal.fire({
+                title: 'IAM 권한 수정',
+                width: 800,
+                html: (
+                    <PermissionManager
+                        accessible={user.accessiblePermissions}
+                        inaccessible={user.inaccessiblePermissions}
+                        handleChange={(data) => {
+                            inputsRef.current = data;
+                        }}
+                    />
+                ),
+                icon: 'question',
+                confirmButtonText: '저장',
+                showCancelButton: true,
+                cancelButtonText: '취소',
+            });
+            console.log(inputsRef.current);
+
+            if (modalRes.isConfirmed) {
+                const apiRes = await putData(
+                    `/api/iam/users/${userId}/permissons`,
+                    inputsRef.current
+                );
+                console.log(apiRes);
+                MySwal.fire('성공적으로 수정되었습니다.', '', 'success');
+            }
+        } catch (error) {
+            console.log(error);
+            MySwal.fire({
+                icon: 'error',
+                title: '권한 수정 실패',
+                text: '권한 수정에 실패했습니다.',
+            });
+        }
+    };
+
     useEffect(() => {
+        async function init() {
+            try {
+                const users = await getData('/api/iam');
+                console.log(users);
+
+                const dataList = users.map((user) => {
+                    const {
+                        id,
+                        stuid,
+                        name,
+                        class: className,
+                        grade,
+                        num,
+                    } = user;
+                    // const className = user.class;
+
+                    return [
+                        id,
+                        stuid,
+                        name,
+                        grade,
+                        className,
+                        num,
+                        'PLMA, CLUBS',
+                        <>
+                            <Button
+                                className="rowButton"
+                                variant="primary"
+                                size="sm"
+                            >
+                                편집
+                            </Button>
+                            <Button
+                                className="rowButton"
+                                variant="primary"
+                                size="sm"
+                                onClick={() =>
+                                    handleClickEditPermission(user.id)
+                                }
+                            >
+                                권한수정
+                            </Button>
+                            <Button
+                                className="rowButton"
+                                variant="danger"
+                                size="sm"
+                            >
+                                삭제
+                            </Button>
+                        </>,
+                    ];
+                });
+                setTableData(dataList);
+                setColumns([
+                    { data: 'ID' },
+                    { data: '학번' },
+                    { data: '성명' },
+                    { data: '학년' },
+                    { data: '반' },
+                    { data: '번호' },
+                    { data: '연결된 서비스' },
+                    { data: '#', orderable: false },
+                ]);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         init();
     }, []);
-
-    async function init() {
-        let dataList = [];
-
-        dataList = await getData('/api/iam');
-
-        dataList = dataList.map((x, idx) => {
-            const { id, stuid, name, grade, num, gender } = x;
-            const className = x.class;
-
-            return [
-                id,
-                stuid,
-                name,
-                grade,
-                className,
-                num,
-                'PLMA, CLUBS',
-                <>
-                    <Button className="rowButton" variant="primary" size="sm">
-                        편집
-                    </Button>
-                    <Button className="rowButton" variant="danger" size="sm">
-                        삭제
-                    </Button>
-                </>,
-            ];
-        });
-
-        setTableData(dataList);
-        setColumns([
-            { data: 'ID' },
-            { data: '학번' },
-            { data: '성명' },
-            { data: '학년' },
-            { data: '반' },
-            { data: '번호' },
-            { data: '연결된 서비스' },
-            { data: '#', orderable: false },
-        ]);
-    }
 
     return (
         <>

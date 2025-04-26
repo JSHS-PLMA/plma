@@ -1,7 +1,5 @@
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 
-import axios from 'axios';
 import moment from 'moment';
 import * as XLSX from 'xlsx';
 
@@ -21,8 +19,6 @@ import {
     Row,
     Col,
 } from 'react-bootstrap';
-
-const TITLE = import.meta.env.VITE_TITLE;
 
 function Points_History() {
     const [tableData, setTableData] = useState([]);
@@ -73,13 +69,16 @@ function Points_History() {
             const delta = afterplus - beforeplus - (afterminus - beforeminus);
 
             return [
-                <Form.Check type="checkbox">
+                <Form.Check key={`checkbox-${id}`} type="checkbox">
                     <Form.Check.Input type="checkbox" isValid />
                 </Form.Check>,
                 id,
                 moment(date).format('YYYY-MM-DD'),
                 teacher.name,
-                <a href={`/points/user_history/${user.id}`}>
+                <a
+                    key={`user-link-${id}`}
+                    href={`/points/user_history/${user.id}`}
+                >
                     {user ? user.name : ''} ({user ? user.stuid : ''})
                 </a>,
                 user.name,
@@ -267,10 +266,10 @@ function Points_History() {
     const handleClickEdit = async (x) => {
         const {
             id,
-            date,
+            // date,
             act_date,
-            teacher,
-            user,
+            // teacher,
+            // user,
             reason,
             reason_caption,
             beforeplus,
@@ -444,6 +443,7 @@ function Points_History() {
                                     },
                                     button: [
                                         <Button
+                                            key="button-refresh"
                                             className="tableButton"
                                             onClick={refreshData}
                                             disabled={dataLoading}
@@ -452,6 +452,7 @@ function Points_History() {
                                             새로고침
                                         </Button>,
                                         <Button
+                                            key="button-alldata"
                                             className="tableButton"
                                             onClick={allData}
                                             disabled={dataLoading}
@@ -460,7 +461,10 @@ function Points_History() {
                                             전체 기록 조회
                                         </Button>,
                                         ///excel export button
-                                        <ButtonGroup aria-label="Basic example">
+                                        <ButtonGroup
+                                            key="button-excel"
+                                            aria-label="Basic example"
+                                        >
                                             <Button
                                                 onClick={exportExcel}
                                                 variant="success"

@@ -1,4 +1,3 @@
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 import './index.scss';
@@ -9,8 +8,6 @@ import { getData, postData } from '~shared/scripts/requestData';
 
 import DataTable from '~shared/ui/datatable';
 import { Card, Button } from 'react-bootstrap';
-
-const TITLE = import.meta.env.VITE_TITLE;
 
 function Case_Control() {
     const [columns, setColumns] = useState([]);
@@ -24,13 +21,18 @@ function Case_Control() {
     async function init() {
         let dataList = await getData('/api/remote/case');
 
-        dataList = dataList.map((x, idx) => {
+        dataList = dataList.map((x) => {
             const { id, status, name, updatedAt, updatedBy } = x;
 
             return [
                 id,
-                <span className="dt-name">{name}</span>,
-                <span className={`dt-status ${status ? 'open' : 'closed'}`}>
+                <span key={`dt-name-${id}`} className="dt-name">
+                    {name}
+                </span>,
+                <span
+                    key={`dt-status-${id}`}
+                    className={`dt-status ${status ? 'open' : 'closed'}`}
+                >
                     {status ? '해제 중' : '잠김'}
                 </span>,
                 <>
@@ -93,6 +95,7 @@ function Case_Control() {
                                     pagination: false,
                                     button: [
                                         <Button
+                                            key="button-openall"
                                             className="tableButton"
                                             onClick={() => {
                                                 doAll('open');
@@ -103,6 +106,7 @@ function Case_Control() {
                                             전체 해제
                                         </Button>,
                                         <Button
+                                            key="button-closeall"
                                             className="tableButton"
                                             onClick={() => {
                                                 doAll('close');

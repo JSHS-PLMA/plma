@@ -31,6 +31,7 @@ import MyDorm_View from '~pages/myDorm/view';
 import MyDorm_Repair from '~pages/myDorm/repair';
 
 import Case_Control from '~pages/remote/case/control';
+import Case_Schedule from '~pages/remote/case/schedule';
 import Case_History from '~pages/remote/case/history';
 
 import Songs_View from '~pages/remote/songs/view';
@@ -86,6 +87,46 @@ const userType = {
     ]),
 };
 
+// const allPermissions = [
+//     'viewIAM',
+//     'applyAccess',
+//     'viewIAMAccess',
+//     'viewAll',
+//     'viewApply',
+//     'viewHistory',
+//     'viewCaseControl',
+//     'viewReason',
+//     'viewBanned',
+//     'viewStudent',
+//     'viewTeacher',
+//     'deleteHistory',
+//     'deleteBannedHistory',
+//     'deployIAM',
+//     'refreshIAM',
+//     'addIAMAccount',
+//     'applyPoint',
+//     'addReason',
+//     'editReason',
+//     'deleteReason',
+//     'editStudent',
+//     'editTeacher',
+//     'caseOpen',
+//     'caseOpenAll',
+//     'caseClose',
+//     'caseCloseAll',
+//     'viewDorm',
+//     'viewDormManage',
+//     'viewCheckHistory',
+//     'addStudent',
+//     'deleteStudent',
+//     'addTeacher',
+//     'deleteTeacher',
+//     'najuredhawk',
+//     'viewRecovery',
+//     'viewCheck',
+//     'viewCaseSchedule',
+// ];
+
 const userPermissions = userType['admin'];
 
 function Layout() {
@@ -132,6 +173,7 @@ const routesWithPermissions = [
     { pathKey: pathKeys.iam.accounts(), element: <IAM_Accounts /> },
 
     { pathKey: pathKeys.remote.case.control(), element: <Case_Control /> },
+    { pathKey: pathKeys.remote.case.schedule(), element: <Case_Schedule /> },
     { pathKey: pathKeys.remote.case.history(), element: <Case_History /> },
     { pathKey: pathKeys.remote.songs.view(), element: <Songs_View /> },
 ];

@@ -38,9 +38,9 @@ function Points_Apply() {
     const name =
         users.find(
             (user) =>
-                user.grade === inputs.grade &&
-                user.class === inputs.classNum &&
-                user.num === inputs.studentNum
+                user.grade == inputs.grade &&
+                user.class == inputs.classNum &&
+                user.num == inputs.studentNum
         )?.name || '';
 
     // const reasonCaption =
@@ -84,15 +84,16 @@ function Points_Apply() {
         }
         const entries = tableData.map((entry) => {
             const [
-                _, // ID
+                ,
+                // ID
                 act_date,
                 grade,
                 classNum,
-                studentNum,
-                __, // name (stuid)
+                studentNum, // name (stuid)
+                ,
                 plusPoints,
-                minusPoints,
-                ___, // updatedTotalPoints
+                minusPoints, // updatedTotalPoints
+                ,
                 reason,
                 reasonCaption,
             ] = entry;
@@ -259,8 +260,8 @@ function Points_Apply() {
                                 <Dropdown.Menu
                                     className="w-100"
                                     style={{
-                                        maxHeight: '200px',
-                                        overflowY: 'auto',
+                                        maxHeight: '500px',
+                                        overflowY: 'scroll',
                                         padding: 0,
                                     }}
                                 >
@@ -448,7 +449,7 @@ function Points_Apply() {
                         <Card.Text className="label">임의 표시 정보</Card.Text>
                         <Row className="g-2">
                             {/* 기준 일자 */}
-                            <Col md={6}>
+                            <Col md={4}>
                                 <InputGroup>
                                     <InputGroup.Text className="bg-light text-dark">
                                         기준 일자
@@ -463,7 +464,7 @@ function Points_Apply() {
                             </Col>
 
                             {/* 부여 사유 */}
-                            <Col md={6}>
+                            <Col md={8}>
                                 <InputGroup>
                                     <InputGroup.Text className="bg-light text-dark">
                                         부여 사유
@@ -490,7 +491,7 @@ function Points_Apply() {
                         <div className="tableWrap">
                             <br />
                             <Card.Text className="label">
-                                발급할 상벌점 목록
+                                발급할 상벌점 목록 ({tableData.length})
                             </Card.Text>
                             <DataTable
                                 className="pointsApplyTable"
@@ -511,10 +512,11 @@ function Points_Apply() {
                             onClick={() => {
                                 if (tableData.length == 0) return;
 
-                                const newTableData = [...tableData];
-
-                                newTableData.shift();
-                                setTableData(newTableData);
+                                setTableData((prev) => {
+                                    const newTableData = [...prev];
+                                    newTableData.pop();
+                                    return newTableData;
+                                });
                             }}
                             disabled={tableData.length == 0}
                         >
@@ -524,7 +526,7 @@ function Points_Apply() {
                         {/* 적용 버튼 */}
                         <Button
                             className="mt-3"
-                            variant="success"
+                            variant="primary"
                             type="button"
                             onClick={handleApplyRecord}
                             disabled={tableData.length == 0}

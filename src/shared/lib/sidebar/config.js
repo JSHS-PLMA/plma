@@ -220,11 +220,6 @@ export const config = [
                         icon: 'users-gear',
                         name: '통합 계정 관리',
                     },
-                    {
-                        pathKey: pathKeys.iam.access(),
-                        icon: 'universal-access',
-                        name: '접근 권한 설정',
-                    },
                 ],
             },
         ],

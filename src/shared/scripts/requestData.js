@@ -16,10 +16,10 @@ async function getData(url, params = {}) {
     return response.data;
 }
 
-async function postData(url, body = {}) {
+async function postData(url, body = {}, config = {}) {
     url = changeURL(url);
 
-    const response = await axios.post(url, body);
+    const response = await axios.post(url, body, config);
     return response.data;
 }
 

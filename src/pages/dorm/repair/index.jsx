@@ -13,18 +13,14 @@ function MyDorm_Repair() {
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
 
-    useEffect(() => {
-        // Call api to fetch user info by axios
-        // axios.get('/api/userInfo').then((res) => {
-        //     setUserInfo(res.data);
-        // });
-        async function init() {
-            const data = await request.getData('/api/admin/dorms/reports');
-            // const data = [];
-            dataRef.current = data;
-            setupTable(data);
-        }
+    async function init() {
+        const data = await request.getData('/api/admin/dorms/reports');
+        // const data = [];
+        dataRef.current = data;
+        setupTable(data);
+    }
 
+    useEffect(() => {
         init();
     }, []);
 
@@ -47,7 +43,6 @@ function MyDorm_Repair() {
 
     const handleSelectStatus = async (id, e) => {
         const status = e.target.name;
-        console.log(id, status);
 
         await request.putData(`/api/dorms/reports/${id}`, { status });
         await MySwal.fire('상태 변경', '상태가 변경되었습니다.', 'success');

@@ -3,7 +3,7 @@ import './index.scss';
 import { Card, Form, Button, Dropdown } from 'react-bootstrap';
 import axios from 'axios';
 import moment from 'moment';
-import { getData } from '~shared/scripts/requestData';
+import { getData, deleteData, postData } from '~shared/scripts/requestData';
 
 import MySwal from '~shared/ui/sweetalert';
 import DataTable from '~shared/ui/datatable';
@@ -22,17 +22,18 @@ function MyDorm_Repair() {
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
 
-    useEffect(() => {
-        // Call api to fetch user info by axios
-        // axios.get('/api/userInfo').then((res) => {
-        //     setUserInfo(res.data);
-        // });
-        async function init() {
-            const data = await getData('/api/dorms/reports');
-            dataRef.current = data;
-            setupTable(data);
-        }
+    async function init() {
+        const data = await getData('/api/dorms/reports');
+        dataRef.current = data;
+        setupTable(data);
+    }
 
+    async function clearInput() {
+        setDescription('');
+        setUploadedImage(null);
+    }
+
+    useEffect(() => {
         init();
         setUser({
             id: 32020,
@@ -54,13 +55,15 @@ function MyDorm_Repair() {
             });
 
             if (result.isConfirmed) {
-                await axios.delete(`/api/dorms/reports/${id}`);
+                await deleteData(`/api/dorms/reports/${id}`);
 
                 await MySwal.fire(
                     '취소 완료',
                     '신청이 취소되었습니다.',
                     'success'
                 );
+
+                await init();
             }
         } catch (error) {
             console.error(error);
@@ -140,7 +143,6 @@ function MyDorm_Repair() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Repair Request Submitted:', { ...user, description });
 
         const formData = new FormData();
         formData.append('id', user.id); // 사용자 id 추가
@@ -148,19 +150,19 @@ function MyDorm_Repair() {
         formData.append('image', uploadedImage); // 이미지 파일 추가
         //Call api to submit repair request by axios
         try {
-            const res = await axios.post('/api/dorms/reports', formData, {
+            const res = await postData('/api/dorms/reports', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
-            console.log(res);
 
             await MySwal.fire({
                 title: '신고 완료',
                 text: '신고가 접수되었습니다.',
                 icon: 'success',
             });
+            await init();
+            await clearInput();
         } catch (err) {
             console.error(err);
 
@@ -177,7 +179,6 @@ function MyDorm_Repair() {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         setUploadedImage(file);
-        console.log(file);
     };
 
     const handleRemoveImage = () => {

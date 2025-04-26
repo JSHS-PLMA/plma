@@ -1,14 +1,10 @@
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-import axios from 'axios';
 import MySwal from '~shared/ui/sweetalert';
 import DataTable from '~shared/ui/datatable';
 import { Card, Button } from 'react-bootstrap';
 
 import './index.scss';
-
-const TITLE = import.meta.env.VITE_TITLE;
 
 import { getData } from '~shared/scripts/requestData';
 
@@ -93,7 +89,7 @@ function PLMA_Accounts() {
 
         dataList = await getData('/api/points/view');
 
-        dataList = dataList.map((x, idx) => {
+        dataList = dataList.map((x) => {
             const { id, stuid, grade, num, name } = x;
             const className = x.class;
 

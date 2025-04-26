@@ -15,7 +15,7 @@ function MyPoints_View() {
     const [tableData, setTableData] = useState([]);
     const [columns, setColumns] = useState([]);
 
-    const dataRef = useRef();
+    const userRef = useRef();
 
     const [optionList, setOptionList] = useState([
         { data: '상점', view: true },
@@ -25,25 +25,67 @@ function MyPoints_View() {
 
     useEffect(() => {
         async function init() {
-            const userInfoData = await getData('/api/points/user_history', {
-                userID,
-            });
-            if (userInfoData['msg']) return;
+            setColumns([
+                // { data: '선택', orderable: false },
+                { data: 'ID', className: 'dt-id' },
+                { data: '기준일자' },
+                { data: '권한자' },
+                { data: '성명 (학번)', className: 'dt-link' },
+                {
+                    className: 'dt-content',
+                    data: (
+                        <Dropdown onClick={optionHandler} autoClose="outside">
+                            <Dropdown.Toggle
+                                variant="primary"
+                                id="dropdown-basic"
+                                size="sm"
+                            >
+                                반영 내용
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                {optionList.map((x, idx) => (
+                                    <Dropdown.Item
+                                        key={idx}
+                                        active={x.view == true}
+                                        onClick={(e) =>
+                                            optionSelect(e, idx, optionList)
+                                        }
+                                    >
+                                        {x.data}
+                                    </Dropdown.Item>
+                                ))}
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    ),
+                    orderBase: 5,
+                },
+                { hidden: true },
+                { data: '사유', className: 'dt-reason' },
+                { data: '반영일시' },
+                { data: '#', orderable: false },
+            ]);
+            try {
+                const user = await getData('/api/points/user_history', {
+                    userID,
+                });
+                if (user['msg']) return;
+                userRef.current = user;
 
-            const { name, stuid, plus, minus } = userInfoData;
-            const etc = 0;
-            setUserInfo({
-                name,
-                stuid,
-                plus,
-                minus,
-                etc,
-                points: plus - minus,
-            });
+                const { name, stuid, plus, minus } = user;
+                const etc = 0;
+                setUserInfo({
+                    name,
+                    stuid,
+                    plus,
+                    minus,
+                    etc,
+                    points: plus - minus,
+                });
 
-            dataRef.current = userInfoData;
-
-            setupTable(userInfoData);
+                setupTable(user);
+            } catch (error) {
+                console.error(error);
+            }
         }
 
         init();
@@ -97,45 +139,6 @@ function MyPoints_View() {
         });
 
         setTableData(userHistory);
-        setColumns([
-            // { data: '선택', orderable: false },
-            { data: 'ID', className: 'dt-id' },
-            { data: '기준일자' },
-            { data: '권한자' },
-            { data: '성명 (학번)', className: 'dt-link' },
-            {
-                className: 'dt-content',
-                data: (
-                    <Dropdown onClick={optionHandler} autoClose="outside">
-                        <Dropdown.Toggle
-                            variant="primary"
-                            id="dropdown-basic"
-                            size="sm"
-                        >
-                            반영 내용
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            {optionList.map((x, idx) => (
-                                <Dropdown.Item
-                                    key={idx}
-                                    active={x.view == true}
-                                    onClick={(e) =>
-                                        optionSelect(e, idx, optionList)
-                                    }
-                                >
-                                    {x.data}
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                ),
-                orderBase: 5,
-            },
-            { hidden: true },
-            { data: '사유', className: 'dt-reason' },
-            { data: '반영일시' },
-            { data: '#', orderable: false },
-        ]);
     }
 
     function optionHandler(e) {
@@ -148,7 +151,7 @@ function MyPoints_View() {
         const arr = [...list];
         arr[idx].view = !arr[idx].view;
 
-        const { history } = dataRef.current;
+        const { history } = userRef.current;
 
         const finalData = history.filter((data) => {
             const { beforeplus, beforeminus, afterplus, afterminus } = data;
@@ -161,7 +164,7 @@ function MyPoints_View() {
 
         setOptionList(arr);
         setupTable({
-            ...dataRef.current,
+            ...userRef.current,
             history: finalData,
         });
     }

@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import './index.scss';
-import { Card, Form, Button, Dropdown } from 'react-bootstrap';
-import axios from 'axios';
+import { Card, Form, Button } from 'react-bootstrap';
 import moment from 'moment';
 import { getData, deleteData, postData } from '~shared/scripts/requestData';
 
@@ -17,61 +16,76 @@ function MyDorm_Repair() {
     });
 
     const [description, setDescription] = useState('');
-    const dataRef = useRef([]);
+    const [uploadedImage, setUploadedImage] = useState(null);
 
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
 
-    async function init() {
-        const data = await getData('/api/dorms/reports');
-        dataRef.current = data;
-        setupTable(data);
+    async function fetchReports() {
+        const reports = await getData('/api/dorms/reports');
+        setupTable(reports);
     }
 
-    async function clearInput() {
+    function clearInput() {
         setDescription('');
         setUploadedImage(null);
     }
 
     useEffect(() => {
+        async function init() {
+            try {
+                setUser({
+                    id: 32020,
+                    name: '강재환',
+                    stuid: '9988',
+                    room_id: '501',
+                });
+                await fetchReports();
+                setColumns([
+                    { data: 'ID' },
+                    { data: '방' },
+                    { data: '신청 날짜' },
+                    { data: '신청자' },
+                    { data: '상세 내용' },
+                    { data: '상태' },
+                    { data: '사진' },
+                    { data: '', orderable: false },
+                ]);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         init();
-        setUser({
-            id: 32020,
-            name: '강재환',
-            stuid: '9988',
-            room_id: '501',
-        });
     }, []);
 
     const handleClickDelete = async (id) => {
         try {
-            const result = await MySwal.fire({
-                title: '취소',
-                text: '정말로 취소하시겠습니까?',
+            const res = await MySwal.fire({
+                title: '정말로 취소하시겠습니까?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: '확인',
                 cancelButtonText: '취소',
             });
 
-            if (result.isConfirmed) {
+            if (res.isConfirmed) {
                 await deleteData(`/api/dorms/reports/${id}`);
+                await fetchReports();
 
-                await MySwal.fire(
-                    '취소 완료',
-                    '신청이 취소되었습니다.',
-                    'success'
-                );
-
-                await init();
+                MySwal.fire({
+                    icon: 'success',
+                    title: '취소 성공',
+                    text: '수리 신청이 취소되었습니다.',
+                });
             }
         } catch (error) {
             console.error(error);
-            await MySwal.fire(
-                '오류 발생',
-                '신청 취소 중 문제가 발생했습니다.',
-                'error'
-            );
+            MySwal.fire({
+                icon: 'error',
+                title: '취소 실패',
+                text: '수리 신청 취소 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+            });
         }
     };
 
@@ -100,21 +114,20 @@ function MyDorm_Repair() {
                 description,
                 /// status: pending, in_progress, completed
                 status === 'pending' ? (
-                    <span className="text">대기 중</span>
+                    <span className="text">접수 완료</span>
                 ) : status === 'in_progress' ? (
                     <span className="text-primary">처리 중</span>
                 ) : (
                     <span className="text-success">완료</span>
                 ),
 
-                <a href={image_url} key={image_url} target="_blank">
+                <a key={`image-link-${id}`} href={image_url} target="_blank">
                     #
                 </a>,
-                /// 취소 버튼
                 <Button
                     variant="danger"
                     size="sm"
-                    key={`cancel-${image_url}`}
+                    key={`button-cancel-${id}`}
                     onClick={() => handleClickDelete(id)}
                 >
                     취소
@@ -122,18 +135,6 @@ function MyDorm_Repair() {
             ];
         });
 
-        setColumns([
-            /// 수리 신청 내역 조회 테이블 컬럼 (형식: {data: '', ...})
-            // { data: '선택', orderable: false },
-            { data: 'ID' },
-            { data: '방' },
-            { data: '신청 날짜' },
-            { data: '신청자' },
-            { data: '상세 내용' },
-            { data: '상태' },
-            { data: '사진' },
-            { data: '', orderable: false },
-        ]);
         setTableData(dataList);
     }
 
@@ -148,33 +149,29 @@ function MyDorm_Repair() {
         formData.append('id', user.id); // 사용자 id 추가
         formData.append('description', description); // 설명 추가
         formData.append('image', uploadedImage); // 이미지 파일 추가
-        //Call api to submit repair request by axios
+
         try {
-            const res = await postData('/api/dorms/reports', formData, {
+            await postData('/api/dorms/reports', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
-            await MySwal.fire({
-                title: '신고 완료',
-                text: '신고가 접수되었습니다.',
+            await fetchReports();
+            clearInput();
+            MySwal.fire({
                 icon: 'success',
+                title: '신청 성공',
+                text: '수리 신청이 성공적으로 접수되었습니다.',
             });
-            await init();
-            await clearInput();
-        } catch (err) {
-            console.error(err);
-
-            await MySwal.fire({
-                title: '신고 실패',
-                text: '신고 접수에 실패했습니다.',
+        } catch (error) {
+            console.error(error);
+            MySwal.fire({
                 icon: 'error',
+                title: '신청 실패',
+                text: '수리 신청 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
             });
         }
     };
-
-    const [uploadedImage, setUploadedImage] = useState(null);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];

@@ -24,7 +24,7 @@ function Points_History() {
     const [tableData, setTableData] = useState([]);
     const [columns, setColumns] = useState([]);
 
-    const dataRef = useRef();
+    const recordsRef = useRef();
     const reasonsRef = useRef([]);
 
     const [dataLoading, setDataLoading] = useState(false);
@@ -38,17 +38,71 @@ function Points_History() {
     const inputsRef = useRef({});
 
     useEffect(() => {
+        async function init(allData = false) {
+            try {
+                await fetchData(allData);
+                setColumns([
+                    { data: '선택', orderable: false },
+                    { data: 'ID', className: 'dt-id' },
+                    { data: '기준일자' },
+                    { data: '권한자' },
+                    {
+                        data: '성명 (학번)',
+                        className: 'dt-link',
+                        searchBase: 5,
+                    },
+                    { hidden: true },
+                    {
+                        className: 'dt-content',
+                        data: (
+                            <Dropdown
+                                onClick={optionHandler}
+                                autoClose="outside"
+                            >
+                                <Dropdown.Toggle
+                                    variant="primary"
+                                    id="dropdown-basic"
+                                    size="sm"
+                                >
+                                    반영 내용
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    {optionList.map((x, idx) => (
+                                        <Dropdown.Item
+                                            key={idx}
+                                            active={x.view == true}
+                                            onClick={(e) =>
+                                                optionSelect(e, idx, optionList)
+                                            }
+                                        >
+                                            {x.data}
+                                        </Dropdown.Item>
+                                    ))}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        ),
+                        orderBase: 7,
+                    },
+                    { hidden: true },
+                    { data: '사유', className: 'dt-reason' },
+                    { data: '반영일시' },
+                    { data: '#', orderable: false },
+                ]);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         init();
     }, []);
 
-    async function init(allData = false) {
-        const data = await getData('/api/points/history', { allData });
-        const reasonData = await getData('/api/reason');
-
-        dataRef.current = data;
-        reasonsRef.current = reasonData;
-        setupTable(data);
-    }
+    const fetchData = async (allData) => {
+        const records = await getData('/api/points/history', { allData });
+        const reasons = await getData('/api/reason');
+        recordsRef.current = records;
+        reasonsRef.current = reasons;
+        setupTable(records);
+    };
 
     function setupTable(data) {
         if (!data) return;
@@ -116,46 +170,6 @@ function Points_History() {
             ];
         });
 
-        setColumns([
-            { data: '선택', orderable: false },
-            { data: 'ID', className: 'dt-id' },
-            { data: '기준일자' },
-            { data: '권한자' },
-            { data: '성명 (학번)', className: 'dt-link', searchBase: 5 },
-            { hidden: true },
-            {
-                className: 'dt-content',
-                data: (
-                    <Dropdown onClick={optionHandler} autoClose="outside">
-                        <Dropdown.Toggle
-                            variant="primary"
-                            id="dropdown-basic"
-                            size="sm"
-                        >
-                            반영 내용
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            {optionList.map((x, idx) => (
-                                <Dropdown.Item
-                                    key={idx}
-                                    active={x.view == true}
-                                    onClick={(e) =>
-                                        optionSelect(e, idx, optionList)
-                                    }
-                                >
-                                    {x.data}
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                ),
-                orderBase: 7,
-            },
-            { hidden: true },
-            { data: '사유', className: 'dt-reason' },
-            { data: '반영일시' },
-            { data: '#', orderable: false },
-        ]);
         setTableData(dataList);
     }
 
@@ -169,7 +183,7 @@ function Points_History() {
         const arr = [...list];
         arr[idx].view = !arr[idx].view;
 
-        const finalData = dataRef.current.filter((data) => {
+        const finalData = recordsRef.current.filter((data) => {
             const { beforeplus, beforeminus, afterplus, afterminus } = data;
             const delta = afterplus - beforeplus - (afterminus - beforeminus);
 
@@ -199,7 +213,7 @@ function Points_History() {
         if (dataLoading) return;
 
         setDataLoading(true);
-        await init();
+        await fetchData();
         setDataLoading(false);
     }
 
@@ -207,7 +221,7 @@ function Points_History() {
         if (dataLoading) return;
 
         setDataLoading(true);
-        await init(true);
+        await fetchData(true);
         setDataLoading(false);
     }
 
@@ -234,7 +248,7 @@ function Points_History() {
     };
 
     async function handleClickDelete(x) {
-        const result = await MySwal.fire({
+        const modalRes = await MySwal.fire({
             title: '정말 삭제하시겠습니까?',
             icon: 'question',
             confirmButtonText: '확인',
@@ -242,15 +256,15 @@ function Points_History() {
             cancelButtonText: '취소',
         });
 
-        if (result.isConfirmed) {
+        if (modalRes.isConfirmed) {
             try {
-                const res = await deleteData(`/api/points/history/${x.id}`);
-                console.log(res);
-                await MySwal.fire('삭제되었습니다.', '', 'success');
+                const apiRes = await deleteData(`/api/points/history/${x.id}`);
+                console.log(apiRes);
                 refreshData();
+                MySwal.fire('삭제되었습니다.', '', 'success');
             } catch (error) {
                 console.error(error);
-                await MySwal.fire('삭제에 실패했습니다.', '', 'error');
+                MySwal.fire('삭제에 실패했습니다.', '', 'error');
             }
         }
     }
@@ -412,12 +426,20 @@ function Points_History() {
                     reasonCaption,
                 });
 
-                await MySwal.fire('수정되었습니다.', '', 'success');
-                init();
+                fetchData();
+                MySwal.fire({
+                    icon: 'success',
+                    title: '상벌점 수정 성공',
+                    text: '상벌점이 성공적으로 수정되었습니다.',
+                });
             }
         } catch (error) {
             console.error(error);
-            await MySwal.fire('수정에 실패했습니다.', '', 'error');
+            MySwal.fire({
+                icon: 'error',
+                title: '상벌점 수정 실패',
+                text: '상벌점 수정 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+            });
         }
     };
 

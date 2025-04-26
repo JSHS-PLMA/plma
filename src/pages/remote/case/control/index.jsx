@@ -15,13 +15,26 @@ function Case_Control() {
     const [dataLoading, setDataLoading] = useState(false);
 
     useEffect(() => {
+        async function init() {
+            try {
+                await fetchCases();
+                setColumns([
+                    { data: 'ID', orderable: false },
+                    { data: '디바이스명', orderable: false },
+                    { data: '잠금상태', orderable: false },
+                    { data: '조작 / 통신', orderable: false },
+                    { data: '마지막 기록', orderable: false },
+                ]);
+            } catch (error) {
+                console.error(error);
+            }
+        }
         init();
     }, []);
 
-    async function init() {
-        let dataList = await getData('/api/remote/case');
-
-        dataList = dataList.map((x) => {
+    const fetchCases = async () => {
+        const cases = await getData('/api/remote/case');
+        const dataList = cases.map((x) => {
             const { id, status, name, updatedAt, updatedBy } = x;
 
             return [
@@ -56,23 +69,19 @@ function Case_Control() {
         });
 
         setTableData(dataList);
-        setColumns([
-            { data: 'ID', orderable: false },
-            { data: '디바이스명', orderable: false },
-            { data: '잠금상태', orderable: false },
-            { data: '조작 / 통신', orderable: false },
-            { data: '마지막 기록', orderable: false },
-        ]);
-    }
+    };
 
     async function doAll(modeTo) {
         if (dataLoading) return;
 
-        if (modeTo == 'open') postData(`/api/remote/case`);
-
-        setDataLoading(true);
-        await init(true);
-        setDataLoading(false);
+        try {
+            if (modeTo == 'open') await postData(`/api/remote/case`);
+            setDataLoading(true);
+            await fetchCases(true);
+            setDataLoading(false);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     return (

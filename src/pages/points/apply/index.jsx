@@ -1,4 +1,3 @@
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 import './index.scss';
@@ -74,14 +73,7 @@ function Points_Apply() {
     };
 
     const handleApplyRecord = async () => {
-        if (tableData.length == 0) {
-            MySwal.fire({
-                icon: 'warning',
-                title: '경고',
-                text: '상벌점을 부여할 학생을 선택해주세요.',
-            });
-            return;
-        }
+        if (tableData.length == 0) return;
         const entries = tableData.map((entry) => {
             const [
                 ,
@@ -111,30 +103,32 @@ function Points_Apply() {
         });
 
         console.log(entries);
-        // API 호출
+
         try {
             await postData('/api/points', entries);
+            await fetchUsersAndReasons();
 
-            await MySwal.fire({
+            MySwal.fire({
                 icon: 'success',
-                title: '성공',
+                title: '상벌점 부여 성공',
                 text: '상벌점이 성공적으로 부여되었습니다.',
             });
-
-            init();
-        } catch (err) {
-            console.error(err);
-            await MySwal.fire({
+        } catch (error) {
+            console.error(error);
+            MySwal.fire({
                 icon: 'error',
-                title: '실패',
-                text: '상벌점 부여에 실패했습니다.',
+                title: '상벌점 부여 실패',
+                text: '상벌점 부여 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
             });
         }
     };
 
     const handleAddRecord = () => {
         if (inputs.plusPoints == 0 && inputs.minusPoints == 0) {
-            alert('상점이나 벌점을 입력해주세요.');
+            MySwal.fire({
+                icon: 'warning',
+                title: '상점이나 벌점을 입력해주세요.',
+            });
             return;
         }
         const selectedUser = users.find(
@@ -145,7 +139,10 @@ function Points_Apply() {
         );
 
         if (!selectedUser) {
-            alert('선택된 학생 정보를 찾을 수 없습니다.');
+            MySwal.fire({
+                icon: 'warning',
+                title: '선택된 학생을 찾을 수 없습니다.',
+            });
             return;
         }
 
@@ -178,9 +175,9 @@ function Points_Apply() {
         const name = e.target.getAttribute('name');
         const value = e.target.getAttribute('value');
 
-        const grade = Math.floor(value / 1000);
-        const classNum = Math.floor((value % 1000) / 100);
-        const studentNum = value % 100;
+        const grade = Math.floor(value / 1000); //0~9
+        const classNum = Math.floor((value % 1000) / 100); // 0~9
+        const studentNum = value % 100; // 0~99
 
         setInputs((prev) => ({
             ...prev,
@@ -208,30 +205,36 @@ function Points_Apply() {
     };
 
     useEffect(() => {
+        async function init() {
+            try {
+                await fetchUsersAndReasons();
+                setColumns([
+                    { data: 'ID' },
+                    { data: '일자' },
+                    { data: '학년' },
+                    { data: '반' },
+                    { data: '번호' },
+                    { data: '성명 (학번)' },
+                    { data: '발급할 상점' },
+                    { data: '발급할 벌점' },
+                    { data: '처리 후 합계' },
+                    { data: '사유코드' },
+                    { data: '사유' },
+                ]);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         init();
     }, []);
 
-    async function init() {
+    const fetchUsersAndReasons = async () => {
         const users = await getData('/api/user');
         const reasons = await getData('/api/reason');
         setUsers(users);
         setReasons(reasons);
-
-        setTableData([]);
-        setColumns([
-            { data: 'ID' },
-            { data: '일자' },
-            { data: '학년' },
-            { data: '반' },
-            { data: '번호' },
-            { data: '성명 (학번)' },
-            { data: '발급할 상점' },
-            { data: '발급할 벌점' },
-            { data: '처리 후 합계' },
-            { data: '사유코드' },
-            { data: '사유' },
-        ]);
-    }
+    };
 
     return (
         <>
@@ -247,7 +250,7 @@ function Points_Apply() {
                             <Dropdown className="mb-3">
                                 <Dropdown.Toggle
                                     variant=""
-                                    className="border w-100 text-start"
+                                    className="border text-start"
                                 >
                                     {name} ({inputs.grade}
                                     {inputs.classNum}
@@ -258,14 +261,14 @@ function Points_Apply() {
                                 </Dropdown.Toggle>
 
                                 <Dropdown.Menu
-                                    className="w-100"
+                                    className=""
                                     style={{
                                         maxHeight: '500px',
-                                        overflowY: 'scroll',
+                                        overflow: 'scroll',
                                         padding: 0,
                                     }}
                                 >
-                                    {/* 옵션 목록 */}
+                                    {/* 학생 검색 */}
                                     <Form.Control
                                         type="text"
                                         name="user"
@@ -374,8 +377,8 @@ function Points_Apply() {
 
                                         <Dropdown.Menu
                                             style={{
-                                                maxHeight: '200px',
-                                                overflowY: 'auto',
+                                                maxHeight: '500px',
+                                                overflow: 'scroll',
                                                 padding: 0,
                                             }}
                                         >

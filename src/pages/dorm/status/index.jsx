@@ -28,15 +28,10 @@ function Dorm_Status() {
         { name: '3학년', value: 3 },
     ];
 
-    const handleChange = (val) => {
-        setGrade(val);
-    };
-
     useEffect(() => {
-        async function init(allData = false) {
-            const data = await getData('/api/dorms', { allData });
+        async function init() {
+            const data = await getData('/api/dorms');
 
-            // dormUsersRef.current = data;
             const dataList = [];
 
             for (let i = 0; i < data.length; i++) {
@@ -137,7 +132,7 @@ function Dorm_Status() {
                             type="radio"
                             name="grade-options"
                             value={grade}
-                            onChange={handleChange}
+                            onChange={(value) => setGrade(value)}
                         >
                             {grades.map((x, idx) => {
                                 return (

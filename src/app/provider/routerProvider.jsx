@@ -24,6 +24,7 @@ import Points_Reason from '~pages/points/reason';
 
 import MyPoints_View from '~pages/myPoints/view';
 
+import Dorm_Repair from '~pages/dorm/repair';
 import Dorm_Status from '~pages/dorm/status';
 import Dorm_Settings from '~pages/dorm/settings';
 
@@ -35,6 +36,7 @@ import Case_Schedule from '~pages/remote/case/schedule';
 import Case_History from '~pages/remote/case/history';
 
 import Songs_View from '~pages/remote/songs/view';
+import Songs_Request from '~pages/remote/songs/request';
 
 import PLMA_Accounts from '~pages/plma/accounts';
 import IAM_Accounts from '~pages/iam/accounts';
@@ -46,7 +48,6 @@ import Page404 from '~pages/404';
 import Navbar from '~shared/ui/navbar';
 import Sidebar from '~shared/ui/sidebar';
 import { pathKeys } from '~shared/lib/react-router/pathKey.js';
-import Dorm_Repair from '../../pages/dorm/repair';
 
 const userType = {
     student: new Set([
@@ -80,6 +81,7 @@ const userType = {
         'viewRemoteCaseSchedule',
         'viewRemoteCaseHistory',
         'viewRemoteSongsView',
+        'viewRemoteSongsRequest',
 
         'viewPLMAAccounts',
         'viewIAMAccounts',
@@ -176,6 +178,7 @@ const routesWithPermissions = [
     { pathKey: pathKeys.remote.case.schedule(), element: <Case_Schedule /> },
     { pathKey: pathKeys.remote.case.history(), element: <Case_History /> },
     { pathKey: pathKeys.remote.songs.view(), element: <Songs_View /> },
+    { pathKey: pathKeys.remote.songs.request(), element: <Songs_Request /> },
 ];
 
 const filteredRoutes = routesWithPermissions

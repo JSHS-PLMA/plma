@@ -162,6 +162,12 @@ export const pathKeys = {
                     permission: 'viewRemoteSongsView',
                 };
             },
+            request() {
+                return {
+                    link: pathKeys.remote.songs.root().concat('request/'),
+                    permission: 'viewRemoteSongsRequest',
+                };
+            },
         },
     },
     plma: {

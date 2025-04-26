@@ -196,7 +196,7 @@ function MyPoints_View() {
                                 className="myPointsViewTable"
                                 columns={columns}
                                 data={tableData}
-                                order={[1, 'desc']}
+                                order={[0, 'desc']}
                                 options={{
                                     language: {
                                         search: '통합 검색: ',

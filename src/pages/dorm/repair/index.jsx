@@ -7,7 +7,7 @@ import { getData, putData, deleteData } from '~shared/scripts/requestData';
 import DataTable from '~shared/ui/datatable';
 import MySwal from '~shared/ui/sweetalert';
 
-function MyDorm_Repair() {
+function Dorm_Repair() {
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
 
@@ -106,15 +106,11 @@ function MyDorm_Repair() {
                 image_url,
             } = x;
             return [
-                // <Form.Check type="checkbox" key={image_url}>
-                //     <Form.Check.Input type="checkbox" isValid />
-                // </Form.Check>,
                 id,
                 room_name,
                 moment(created_at).format('YYYY-MM-DD'),
                 `${user_name} (${user_stuid})`,
                 description,
-                /// status: pending, in_progress, completed
                 <DropdownButton
                     key={`dropdown-${id}`}
                     id="dropdown-basic-button"
@@ -171,4 +167,4 @@ function MyDorm_Repair() {
     );
 }
 
-export default MyDorm_Repair;
+export default Dorm_Repair;

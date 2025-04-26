@@ -7,7 +7,7 @@ import { getData, putData, deleteData } from '~shared/scripts/requestData';
 import DataTable from '~shared/ui/datatable';
 import MySwal from '~shared/ui/sweetalert';
 
-function MyDorm_Repair() {
+function Dorm_Repair() {
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
 
@@ -167,4 +167,4 @@ function MyDorm_Repair() {
     );
 }
 
-export default MyDorm_Repair;
+export default Dorm_Repair;

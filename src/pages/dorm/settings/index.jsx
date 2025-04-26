@@ -10,8 +10,7 @@ import {
     Col,
     Button,
 } from 'react-bootstrap';
-import { getData } from '~shared/scripts/requestData';
-import axios from 'axios';
+import { getData, putData } from '~shared/scripts/requestData';
 
 import './index.scss';
 
@@ -44,7 +43,7 @@ function Dorm_Settings() {
     );
 
     const handleStudentClick = (id) => {
-        if (selectedCell == null) return;
+        if (!selectedCell) return;
         if (id == -1) {
             setDormUsers((prev) => {
                 const newData = prev.map((item) => ({
@@ -54,7 +53,6 @@ function Dorm_Settings() {
                 newData[selectedCell.row].users[selectedCell.col] = 'excluded';
                 return newData;
             });
-
             return;
         }
 
@@ -71,28 +69,28 @@ function Dorm_Settings() {
     };
 
     useEffect(() => {
-        async function init(allData = false) {
-            const data = await getData('/api/dorms', { allData });
-            dormUsersRef.current = data;
-            setDormUsers(data);
+        async function init() {
+            const dormUsers = await getData('/api/dorms');
+            dormUsersRef.current = dormUsers;
+            setDormUsers(dormUsers);
 
-            const userData = await getData('/api/user', { allData });
-            usersRef.current = userData;
+            const users = await getData('/api/user');
+            usersRef.current = users;
 
             const dataList = [];
 
-            for (let i = 0; i < data.length; i++) {
+            for (let i = 0; i < dormUsers.length; i++) {
                 dataList.push([
-                    `${String(data[i].room_name)}`,
-                    data[i].room_id,
-                    data[i].room_grade,
-                    data[i].year,
-                    data[i].semester,
-                    data[i].dorm_name,
-                    data[i].users[0] ? data[i].users[0].name : '',
-                    data[i].users[1] ? data[i].users[1].name : '',
-                    data[i].users[2] ? data[i].users[2].name : '',
-                    data[i].users[3] ? data[i].users[3].name : '',
+                    `${String(dormUsers[i].room_name)}`,
+                    dormUsers[i].room_id,
+                    dormUsers[i].room_grade,
+                    dormUsers[i].year,
+                    dormUsers[i].semester,
+                    dormUsers[i].dorm_name,
+                    dormUsers[i].users[0] ? dormUsers[i].users[0].name : '',
+                    dormUsers[i].users[1] ? dormUsers[i].users[1].name : '',
+                    dormUsers[i].users[2] ? dormUsers[i].users[2].name : '',
+                    dormUsers[i].users[3] ? dormUsers[i].users[3].name : '',
                 ]);
             }
 
@@ -116,33 +114,32 @@ function Dorm_Settings() {
 
     const handleCellClick = (e) => {
         const cell = e.target.closest('td');
+        if (!cell) return;
 
-        if (cell) {
-            const prevCell = document.querySelector('.selected');
-            if (prevCell) prevCell.classList.remove('selected');
-            cell.classList.add('selected');
+        const prevCell = document.querySelector('.selected');
+        if (prevCell) prevCell.classList.remove('selected');
+        cell.classList.add('selected');
 
-            const rowIndex = dormUsers.findIndex(
-                (room) =>
-                    room.room_name ==
-                    cell.closest('tr').querySelector('td').innerText
-            );
-            const colIndex = cell.cellIndex;
+        const rowIndex = dormUsers.findIndex(
+            (room) =>
+                room.room_name ==
+                cell.closest('tr').querySelector('td').innerText
+        );
+        const colIndex = cell.cellIndex;
 
-            setDormUsers((prev) => {
-                const newData = prev.map((item) => ({
-                    ...item,
-                    users: [...item.users],
-                }));
-                newData[rowIndex].users[colIndex - 1] = null;
-                return newData;
-            });
+        setDormUsers((prev) => {
+            const newData = prev.map((item) => ({
+                ...item,
+                users: [...item.users],
+            }));
+            newData[rowIndex].users[colIndex - 1] = null;
+            return newData;
+        });
 
-            setSelectedCell({
-                row: rowIndex,
-                col: colIndex - 1,
-            });
-        }
+        setSelectedCell({
+            row: rowIndex,
+            col: colIndex - 1,
+        });
     };
 
     const handleAssignRandomRooms = () => {
@@ -216,7 +213,7 @@ function Dorm_Settings() {
         console.log(data);
 
         try {
-            const res = await axios.put('/api/dorms', data);
+            const res = await putData('/api/dorms', data);
             console.log(res);
         } catch (error) {
             console.error(error);
@@ -224,8 +221,10 @@ function Dorm_Settings() {
         return;
     };
 
+    /// 연/학기/기숙사 바뀔때마다 초기화 (api 요청 X)
+    // 기숙사 인원 4명으로 가정
     useEffect(() => {
-        if (dormUsersRef.current == null) return;
+        if (!dormUsersRef.current) return;
         const newData = dormUsersRef.current.map((room) => {
             return {
                 ...room,
@@ -240,8 +239,6 @@ function Dorm_Settings() {
     }, [grade, year, semester, dormName]);
 
     useEffect(() => {
-        console.log('update table');
-
         setTableData((prev) => {
             const newData = prev.map((row, rowIndex) => {
                 const updatedRow = [...row];

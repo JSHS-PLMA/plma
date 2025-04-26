@@ -13,6 +13,56 @@ function PLMA_Accounts() {
     const [tableData, setTableData] = useState([]);
 
     useEffect(() => {
+        async function init() {
+            try {
+                const users = await getData('/api/points/view');
+
+                const dataList = users.map((x) => {
+                    const { id, stuid, grade, num, name } = x;
+                    const className = x.class;
+
+                    return [
+                        id,
+                        stuid,
+                        name,
+                        grade,
+                        className,
+                        num,
+                        <>
+                            <Button
+                                className="rowButton"
+                                variant="primary"
+                                size="sm"
+                                onClick={() => handleClickEdit(x)}
+                            >
+                                편집
+                            </Button>
+                            <Button
+                                className="rowButton"
+                                variant="danger"
+                                size="sm"
+                            >
+                                삭제
+                            </Button>
+                        </>,
+                    ];
+                });
+
+                setTableData(dataList);
+                setColumns([
+                    { data: 'ID' },
+                    { data: '학번' },
+                    { data: '성명' },
+                    { data: '학년' },
+                    { data: '반' },
+                    { data: '번호' },
+                    { data: '#', orderable: false },
+                ]);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         init();
     }, []);
 
@@ -74,59 +124,15 @@ function PLMA_Accounts() {
             showCancelButton: true,
             confirmButtonText: '수정',
             preConfirm: () => {
-                const editStuid = document.getElementById('editStuid').value;
-                const editName = document.getElementById('editName').value;
-                const editGrade = document.getElementById('editGrade').value;
-                const editClass = document.getElementById('editClass').value;
-                const editNum = document.getElementById('editNum').value;
+                // const editStuid = document.getElementById('editStuid').value;
+                // const editName = document.getElementById('editName').value;
+                // const editGrade = document.getElementById('editGrade').value;
+                // const editClass = document.getElementById('editClass').value;
+                // const editNum = document.getElementById('editNum').value;
                 //로직작성
             },
         });
     };
-
-    async function init() {
-        let dataList = [];
-
-        dataList = await getData('/api/points/view');
-
-        dataList = dataList.map((x) => {
-            const { id, stuid, grade, num, name } = x;
-            const className = x.class;
-
-            return [
-                id,
-                stuid,
-                name,
-                grade,
-                className,
-                num,
-                <>
-                    <Button
-                        className="rowButton"
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleClickEdit(x)}
-                    >
-                        편집
-                    </Button>
-                    <Button className="rowButton" variant="danger" size="sm">
-                        삭제
-                    </Button>
-                </>,
-            ];
-        });
-
-        setTableData(dataList);
-        setColumns([
-            { data: 'ID' },
-            { data: '학번' },
-            { data: '성명' },
-            { data: '학년' },
-            { data: '반' },
-            { data: '번호' },
-            { data: '#', orderable: false },
-        ]);
-    }
 
     return (
         <>

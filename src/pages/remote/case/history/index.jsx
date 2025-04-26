@@ -1,15 +1,11 @@
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 import './index.scss';
 
-import axios from 'axios';
 import moment from 'moment';
 
 import DataTable from '~shared/ui/datatable';
 import { Card, Button } from 'react-bootstrap';
-
-const TITLE = import.meta.env.VITE_TITLE;
 
 import { getData } from '~shared/scripts/requestData';
 
@@ -20,20 +16,38 @@ function Case_History() {
     const [dataLoading, setDataLoading] = useState(false);
 
     useEffect(() => {
+        async function init() {
+            try {
+                await fetchRecords();
+                setColumns([
+                    { data: 'ID' },
+                    { data: '권한자' },
+                    { data: '디바이스명' },
+                    { data: '조작', className: 'dt-content' },
+                    { data: '날짜', orderable: false },
+                ]);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         init();
     }, []);
 
-    async function init(allData = false) {
-        let dataList = await getData('/api/remote/case/history', { allData });
+    async function fetchRecords(allData = false) {
+        const records = await getData('/api/remote/case/history', { allData });
 
-        dataList = dataList.map((x, idx) => {
+        const dataList = records.map((x) => {
             const { id, operatedBy, affected, statusTo, operatedAt } = x;
 
             return [
                 id,
                 operatedBy.name,
                 affected.name ?? (affected.all == true ? '전체' : '오류'),
-                <span className={`type ${statusTo == 0 ? 'close' : 'open'}`}>
+                <span
+                    key={`status-${id}`}
+                    className={`type ${statusTo == 0 ? 'close' : 'open'}`}
+                >
                     {statusTo == 0 ? '잠금' : '해제'}
                 </span>,
                 moment(operatedAt).format('YYYY-MM-DD HH:MM:SS'),
@@ -41,20 +55,13 @@ function Case_History() {
         });
 
         setTableData(dataList);
-        setColumns([
-            { data: 'ID' },
-            { data: '권한자' },
-            { data: '디바이스명' },
-            { data: '조작', className: 'dt-content' },
-            { data: '날짜', orderable: false },
-        ]);
     }
 
     async function refreshData() {
         if (dataLoading) return;
 
         setDataLoading(true);
-        await init();
+        await fetchRecords();
         setDataLoading(false);
     }
 
@@ -62,7 +69,7 @@ function Case_History() {
         if (dataLoading) return;
 
         setDataLoading(true);
-        await init(true);
+        await fetchRecords(true);
         setDataLoading(false);
     }
 
@@ -88,6 +95,7 @@ function Case_History() {
                                     },
                                     button: [
                                         <Button
+                                            key="button-refresh"
                                             className="tableButton"
                                             onClick={refreshData}
                                             disabled={dataLoading}
@@ -96,6 +104,7 @@ function Case_History() {
                                             새로고침
                                         </Button>,
                                         <Button
+                                            key="button-alldata"
                                             className="tableButton"
                                             onClick={allData}
                                             disabled={dataLoading}

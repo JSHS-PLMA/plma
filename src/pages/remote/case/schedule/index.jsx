@@ -13,20 +13,24 @@ function Case_Control() {
 
     useEffect(() => {
         async function init() {
-            const schedules = await getData('/api/remote/schedule');
+            try {
+                const schedules = await getData('/api/remote/schedule');
 
-            const dataList = schedules.map((x) => {
-                const { id, cron, bhv } = x;
+                const dataList = schedules.map((x) => {
+                    const { id, cron, bhv } = x;
 
-                return [id, cron, bhv];
-            });
+                    return [id, cron, bhv];
+                });
 
-            setTableData(dataList);
-            setColumns([
-                { data: 'ID', orderable: false },
-                { data: 'cron', orderable: false },
-                { data: 'behave', orderable: false },
-            ]);
+                setTableData(dataList);
+                setColumns([
+                    { data: 'ID', orderable: false },
+                    { data: 'cron', orderable: false },
+                    { data: 'behave', orderable: false },
+                ]);
+            } catch (error) {
+                console.error(error);
+            }
         }
 
         init();

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 
 import DataTable from '~shared/ui/datatable';
 import { Card, Button } from 'react-bootstrap';
@@ -9,6 +10,14 @@ import MySwal from '~shared/ui/sweetalert';
 
 import { getData, putData } from '~shared/scripts/requestData';
 
+//
+PermissionManager.propTypes = {
+    accessible: PropTypes.array.isRequired,
+    inaccessible: PropTypes.array.isRequired,
+    handleChange: PropTypes.func.isRequired,
+};
+//
+
 function PermissionManager({ accessible, inaccessible, handleChange }) {
     const [accessiblePermissions, setAccessiblePermissions] =
         useState(accessible);
@@ -16,7 +25,6 @@ function PermissionManager({ accessible, inaccessible, handleChange }) {
         useState(inaccessible);
     const [filterAccess, setFilterAccess] = useState('');
     const [filterInaccess, setFilterInaccess] = useState('');
-    console.log(accessiblePermissions, inaccessiblePermissions);
     useEffect(() => {
         handleChange({
             accessiblePermissions,
@@ -166,15 +174,14 @@ function IAM_Accounts() {
             console.log(inputsRef.current);
 
             if (modalRes.isConfirmed) {
-                const apiRes = await putData(
+                await putData(
                     `/api/iam/users/${userId}/permissons`,
                     inputsRef.current
                 );
-                console.log(apiRes);
                 MySwal.fire('성공적으로 수정되었습니다.', '', 'success');
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
             MySwal.fire({
                 icon: 'error',
                 title: '권한 수정 실패',
@@ -248,7 +255,7 @@ function IAM_Accounts() {
                     { data: '#', orderable: false },
                 ]);
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         }
 

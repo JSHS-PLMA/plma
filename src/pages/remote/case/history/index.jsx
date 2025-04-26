@@ -11,7 +11,7 @@ import { Card, Button } from 'react-bootstrap';
 
 const TITLE = import.meta.env.VITE_TITLE;
 
-import { getData } from '~shared/scripts/getData';
+import { getData } from '~shared/scripts/requestData';
 
 function Case_History() {
     const [columns, setColumns] = useState([]);

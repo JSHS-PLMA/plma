@@ -3,7 +3,7 @@ import './index.scss';
 import { Card, Form, Button, Dropdown } from 'react-bootstrap';
 import axios from 'axios';
 import moment from 'moment';
-import { getData } from '~shared/scripts/getData';
+import { getData } from '~shared/scripts/requestData';
 
 import MySwal from '~shared/ui/sweetalert';
 import DataTable from '~shared/ui/datatable';
@@ -42,25 +42,34 @@ function MyDorm_Repair() {
         });
     }, []);
 
-    const handleClickDelete = (id) => {
-        MySwal.fire({
-            title: '취소',
-            text: '정말로 취소하시겠습니까?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '확인',
-            cancelButtonText: '취소',
-        }).then((result) => {
+    const handleClickDelete = async (id) => {
+        try {
+            const result = await MySwal.fire({
+                title: '취소',
+                text: '정말로 취소하시겠습니까?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '확인',
+                cancelButtonText: '취소',
+            });
+
             if (result.isConfirmed) {
-                axios.delete(`/api/dorms/reports/${id}`).then(() => {
-                    MySwal.fire(
-                        '취소 완료',
-                        '신청이 취소되었습니다.',
-                        'success'
-                    );
-                });
+                await axios.delete(`/api/dorms/reports/${id}`);
+
+                await MySwal.fire(
+                    '취소 완료',
+                    '신청이 취소되었습니다.',
+                    'success'
+                );
             }
-        });
+        } catch (error) {
+            console.error(error);
+            await MySwal.fire(
+                '오류 발생',
+                '신청 취소 중 문제가 발생했습니다.',
+                'error'
+            );
+        }
     };
 
     function setupTable(data) {
@@ -129,7 +138,7 @@ function MyDorm_Repair() {
         setDescription(e.target.value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log('Repair Request Submitted:', { ...user, description });
 
@@ -138,28 +147,29 @@ function MyDorm_Repair() {
         formData.append('description', description); // 설명 추가
         formData.append('image', uploadedImage); // 이미지 파일 추가
         //Call api to submit repair request by axios
-        axios
-            .post('/api/dorms/reports', formData, {
+        try {
+            const res = await axios.post('/api/dorms/reports', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-            })
-            .then((res) => {
-                MySwal.fire({
-                    title: '신고 완료',
-                    text: '신고가 접수되었습니다.',
-                    icon: 'success',
-                });
-                console.log(res);
-            })
-            .catch((err) => {
-                console.error(err);
-                MySwal.fire({
-                    title: '신고 실패',
-                    text: '신고 접수에 실패했습니다.',
-                    icon: 'error',
-                });
             });
+
+            console.log(res);
+
+            await MySwal.fire({
+                title: '신고 완료',
+                text: '신고가 접수되었습니다.',
+                icon: 'success',
+            });
+        } catch (err) {
+            console.error(err);
+
+            await MySwal.fire({
+                title: '신고 실패',
+                text: '신고 접수에 실패했습니다.',
+                icon: 'error',
+            });
+        }
     };
 
     const [uploadedImage, setUploadedImage] = useState(null);

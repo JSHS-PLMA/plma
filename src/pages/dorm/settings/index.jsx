@@ -10,7 +10,7 @@ import {
     Col,
     Button,
 } from 'react-bootstrap';
-import { getData } from '~shared/scripts/getData';
+import { getData } from '~shared/scripts/requestData';
 import axios from 'axios';
 
 import './index.scss';
@@ -195,7 +195,7 @@ function Dorm_Settings() {
         });
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const data = dormUsers
             .filter(
                 (room) =>
@@ -215,14 +215,12 @@ function Dorm_Settings() {
             }));
         console.log(data);
 
-        axios
-            .put('/api/dorms', data)
-            .then((res) => {
-                console.log(res);
-            })
-            .catch((error) => {
-                console.error(error);
-            });
+        try {
+            const res = await axios.put('/api/dorms', data);
+            console.log(res);
+        } catch (error) {
+            console.error(error);
+        }
         return;
     };
 

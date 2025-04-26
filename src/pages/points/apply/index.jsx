@@ -1,7 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-import postData from '~shared/scripts/postData';
 import './index.scss';
 import MySwal from '~shared/ui/sweetalert';
 
@@ -16,7 +15,7 @@ import {
 } from 'react-bootstrap';
 import DataTable from '~shared/ui/datatable';
 
-import { getData } from '~shared/scripts/getData';
+import { getData, postData } from '~shared/scripts/requestData';
 
 function Points_Apply() {
     const [columns, setColumns] = useState([]);
@@ -74,7 +73,7 @@ function Points_Apply() {
         }));
     };
 
-    const handleApplyRecord = () => {
+    const handleApplyRecord = async () => {
         if (tableData.length == 0) {
             MySwal.fire({
                 icon: 'warning',
@@ -112,23 +111,24 @@ function Points_Apply() {
 
         console.log(entries);
         // API 호출
-        postData('/api/points', entries)
-            .then((res) => {
-                MySwal.fire({
-                    icon: 'success',
-                    title: '성공',
-                    text: '상벌점이 성공적으로 부여되었습니다.',
-                });
-                init();
-            })
-            .catch((err) => {
-                console.error(err);
-                MySwal.fire({
-                    icon: 'error',
-                    title: '실패',
-                    text: '상벌점 부여에 실패했습니다.',
-                });
+        try {
+            await postData('/api/points', entries);
+
+            await MySwal.fire({
+                icon: 'success',
+                title: '성공',
+                text: '상벌점이 성공적으로 부여되었습니다.',
             });
+
+            init();
+        } catch (err) {
+            console.error(err);
+            await MySwal.fire({
+                icon: 'error',
+                title: '실패',
+                text: '상벌점 부여에 실패했습니다.',
+            });
+        }
     };
 
     const handleAddRecord = () => {

@@ -2,11 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import './index.scss';
 import { Card, Form, Button, Dropdown, DropdownButton } from 'react-bootstrap';
 import moment from 'moment';
-import { getData } from '~shared/scripts/getData';
+import * as request from '~shared/scripts/requestData';
 
 import DataTable from '~shared/ui/datatable';
 import MySwal from '~shared/ui/sweetalert';
-import axios from 'axios';
 
 function MyDorm_Repair() {
     const dataRef = useRef([]);
@@ -20,7 +19,7 @@ function MyDorm_Repair() {
         //     setUserInfo(res.data);
         // });
         async function init() {
-            const data = await getData('/api/admin/dorms/reports');
+            const data = await request.getData('/api/admin/dorms/reports');
             // const data = [];
             dataRef.current = data;
             setupTable(data);
@@ -29,41 +28,30 @@ function MyDorm_Repair() {
         init();
     }, []);
 
-    const handleClickDelete = (id) => {
-        MySwal.fire({
+    const handleClickDelete = async (id) => {
+        const result = await MySwal.fire({
             title: '취소',
             text: '정말로 취소하시겠습니까?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: '확인',
             cancelButtonText: '취소',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                axios.delete(`/api/dorms/reports/${id}`).then(() => {
-                    MySwal.fire(
-                        '취소 완료',
-                        '신청이 취소되었습니다.',
-                        'success'
-                    );
-                });
-            }
         });
+
+        if (result.isConfirmed) {
+            await request.deleteData(`/api/dorms/reports/${id}`);
+            await MySwal.fire('취소 완료', '신청이 취소되었습니다.', 'success');
+            await init();
+        }
     };
 
-    const handleSelectStatus = (id, e) => {
+    const handleSelectStatus = async (id, e) => {
         const status = e.target.name;
         console.log(id, status);
-        axios.put(`/api/dorms/reports/${id}`, { status }).then(() => {
-            MySwal.fire('상태 변경', '상태가 변경되었습니다.', 'success');
-            // init();
-            dataRef.current = dataRef.current.map((x) => {
-                if (x.id === id) {
-                    return { ...x, status };
-                }
-                return x;
-            });
-            setupTable(dataRef.current);
-        });
+
+        await request.putData(`/api/dorms/reports/${id}`, { status });
+        await MySwal.fire('상태 변경', '상태가 변경되었습니다.', 'success');
+        await init();
     };
 
     function setupTable(data) {

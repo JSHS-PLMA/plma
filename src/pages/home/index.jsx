@@ -5,20 +5,18 @@ import './index.scss';
 
 const TITLE = import.meta.env.VITE_TITLE;
 
-function Home(){
+function Home() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        navigate("/points/view");
+        navigate('/points/view');
     }, []);
 
-    return(
+    return (
         <>
-        <div id="home">
-            
-        </div>
+            <div id="home"></div>
         </>
-    )
+    );
 }
 
 export default Home;

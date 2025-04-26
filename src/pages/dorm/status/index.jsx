@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import DataTable from '~shared/ui/datatable';
 
 import { Card, ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
-import { getData } from '~shared/scripts/getData';
+import { getData } from '~shared/scripts/requestData';
 import './index.scss';
 
 function Dorm_Status() {

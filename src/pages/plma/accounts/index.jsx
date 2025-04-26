@@ -10,7 +10,7 @@ import './index.scss';
 
 const TITLE = import.meta.env.VITE_TITLE;
 
-import { getData } from '~shared/scripts/getData';
+import { getData } from '~shared/scripts/requestData';
 
 function PLMA_Accounts() {
     const [columns, setColumns] = useState([]);

@@ -5,7 +5,7 @@ import './index.scss';
 
 import moment from 'moment';
 
-import { getData, postData } from '~shared/scripts/getData';
+import { getData, postData } from '~shared/scripts/requestData';
 
 import DataTable from '~shared/ui/datatable';
 import { Card, Button } from 'react-bootstrap';

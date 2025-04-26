@@ -5,7 +5,7 @@ import axios from 'axios';
 
 import MySwal from '~shared/ui/sweetalert';
 
-import { getData } from '~shared/scripts/getData.js';
+import { getData } from '~shared/scripts/requestData';
 
 import { Card, Button, Dropdown, Form, Row, Col } from 'react-bootstrap';
 import DataTable from '~shared/ui/datatable';

@@ -10,7 +10,7 @@ import MySwal from '~shared/ui/sweetalert';
 
 import './index.scss';
 
-import { getData } from '~shared/scripts/getData';
+import { getData, deleteData, putData } from '~shared/scripts/requestData';
 
 import {
     Card,
@@ -234,27 +234,26 @@ function Points_History() {
         );
     };
 
-    function handleClickDelete(x) {
-        MySwal.fire({
+    async function handleClickDelete(x) {
+        const result = await MySwal.fire({
             title: '정말 삭제하시겠습니까?',
             icon: 'question',
             confirmButtonText: '확인',
             showCancelButton: true,
             cancelButtonText: '취소',
-        })
-            .then((result) => {
-                if (result.isConfirmed) {
-                    axios.delete(`/api/points/history/${x.id}`).then((res) => {
-                        console.log(res);
-                        MySwal.fire('삭제되었습니다.', '', 'success');
-                        refreshData();
-                    });
-                }
-            })
-            .catch((error) => {
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const res = await deleteData(`/api/points/history/${x.id}`);
+                console.log(res);
+                await MySwal.fire('삭제되었습니다.', '', 'success');
+                refreshData();
+            } catch (error) {
                 console.error(error);
-                MySwal.fire('삭제에 실패했습니다.', '', 'error');
-            });
+                await MySwal.fire('삭제에 실패했습니다.', '', 'error');
+            }
+        }
     }
     const handleChange = (e) => {
         const { name, value } = e.target; // name 속성 가져오기
@@ -265,7 +264,7 @@ function Points_History() {
         };
     };
 
-    const handleClickEdit = (x) => {
+    const handleClickEdit = async (x) => {
         const {
             id,
             date,
@@ -361,51 +360,66 @@ function Points_History() {
             </Form>
         );
 
-        MySwal.fire({
-            title: '상벌점 수정',
-            html: modalContent,
-            showCancelButton: true,
-            confirmButtonText: '확인',
-            cancelButtonText: '취소',
-
-            preConfirm: () => {
-                const { pointType, point, reason, act_date, reasonCaption } =
-                    inputsRef.current;
-
-                if (
-                    !(pointType || point || reason || act_date || reasonCaption)
-                ) {
-                    MySwal.showValidationMessage('적어도 하나는 수정해주세요.');
-                    return false;
-                }
-
-                return { pointType, point, reason, act_date, reasonCaption };
-            },
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const { pointType, point, reason, act_date, reasonCaption } =
-                    result.value;
-                console.log(result.value);
-
-                // 여기에 수정된 데이터를 서버로 전송하는 로직 추가
-                axios
-                    .put(`/api/points/history/${id}`, {
+        try {
+            const result = await MySwal.fire({
+                title: '상벌점 수정',
+                html: modalContent,
+                showCancelButton: true,
+                confirmButtonText: '확인',
+                cancelButtonText: '취소',
+                preConfirm: () => {
+                    const {
                         pointType,
-                        point: parseInt(point),
+                        point,
                         reason,
                         act_date,
                         reasonCaption,
-                    })
-                    .then((res) => {
-                        MySwal.fire('수정되었습니다.', '', 'success');
-                        init();
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                        MySwal.fire('수정에 실패했습니다.', '', 'error');
-                    });
+                    } = inputsRef.current;
+
+                    if (
+                        !(
+                            pointType ||
+                            point ||
+                            reason ||
+                            act_date ||
+                            reasonCaption
+                        )
+                    ) {
+                        MySwal.showValidationMessage(
+                            '적어도 하나는 수정해주세요.'
+                        );
+                        return false;
+                    }
+
+                    return {
+                        pointType,
+                        point,
+                        reason,
+                        act_date,
+                        reasonCaption,
+                    };
+                },
+            });
+
+            if (result.isConfirmed) {
+                const { pointType, point, reason, act_date, reasonCaption } =
+                    result.value;
+
+                await putData(`/api/points/history/${id}`, {
+                    pointType,
+                    point: parseInt(point),
+                    reason,
+                    act_date,
+                    reasonCaption,
+                });
+
+                await MySwal.fire('수정되었습니다.', '', 'success');
+                init();
             }
-        });
+        } catch (error) {
+            console.error(error);
+            await MySwal.fire('수정에 실패했습니다.', '', 'error');
+        }
     };
 
     return (

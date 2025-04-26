@@ -6,7 +6,7 @@ import './index.scss';
 import { Card, Button } from 'react-bootstrap';
 import DataTable from '~shared/ui/datatable';
 
-import { getData } from '~shared/scripts/getData';
+import { getData } from '~shared/scripts/requestData';
 
 function Points_View() {
     const [tableData, setTableData] = useState([]);

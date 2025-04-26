@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 import moment from 'moment';
-import { getData } from '~shared/scripts/getData.js';
+import { getData } from '~shared/scripts/requestData';
 
 import './index.scss';
 

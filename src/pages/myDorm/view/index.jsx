@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { Card } from 'react-bootstrap';
-import { getData } from '~shared/scripts/getData.js';
+import { getData } from '~shared/scripts/requestData';
 import './index.scss';
 
 const userID = 34084; // 32067

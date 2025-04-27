@@ -1,9 +1,7 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import './index.scss';
-
-const TITLE = import.meta.env.VITE_TITLE;
 
 function Home() {
     const navigate = useNavigate();

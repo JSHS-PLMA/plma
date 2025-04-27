@@ -198,9 +198,10 @@ function Points_History() {
 
     function handleSelectReason(e) {
         const reasonId = e.target.value;
-        const reasons = reasonsRef.current;
-        const reasonCaption = reasons.find((x) => x.id == reasonId).title;
-        console.log(reasonCaption);
+        const reasonCaption = reasonsRef.current.find(
+            (x) => x.id == reasonId
+        ).title;
+        document.getElementById('reasonCaption').value = reasonCaption; // 살짝 좋지 않은 방법
 
         inputsRef.current = {
             ...inputsRef.current,
@@ -248,7 +249,7 @@ function Points_History() {
     };
 
     async function handleClickDelete(x) {
-        const modalRes = await MySwal.fire({
+        const res = await MySwal.fire({
             title: '정말 삭제하시겠습니까?',
             icon: 'question',
             confirmButtonText: '확인',
@@ -256,15 +257,22 @@ function Points_History() {
             cancelButtonText: '취소',
         });
 
-        if (modalRes.isConfirmed) {
+        if (res.isConfirmed) {
             try {
-                const apiRes = await deleteData(`/api/points/history/${x.id}`);
-                console.log(apiRes);
-                refreshData();
-                MySwal.fire('삭제되었습니다.', '', 'success');
+                await deleteData(`/api/points/history/${x.id}`);
+                await fetchData();
+                MySwal.fire({
+                    icon: 'success',
+                    title: '상벌점 삭제 성공',
+                    text: '상벌점이 성공적으로 삭제되었습니다.',
+                });
             } catch (error) {
                 console.error(error);
-                MySwal.fire('삭제에 실패했습니다.', '', 'error');
+                MySwal.fire({
+                    icon: 'error',
+                    title: '상벌점 삭제 실패',
+                    text: '상벌점 삭제 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+                });
             }
         }
     }
@@ -296,7 +304,7 @@ function Points_History() {
 
         inputsRef.current = {};
 
-        const modalContent = (
+        const modalContent = () => (
             <Form id="editForm" className="p-3">
                 <Row className="mb-3">
                     <Col md={6}>
@@ -327,7 +335,20 @@ function Points_History() {
                     </Col>
                 </Row>
                 <Row className="mb-3">
-                    <Col md={6}>
+                    <Col md={4}>
+                        <Form.Group controlId="act_date">
+                            <Form.Label>기준 일자</Form.Label>
+                            <Form.Control
+                                type="date"
+                                defaultValue={moment(act_date).format(
+                                    'YYYY-MM-DD'
+                                )}
+                                name="act_date"
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={8}>
                         <Form.Group controlId="reason">
                             <Form.Label>기준 규정</Form.Label>
                             <Form.Select
@@ -343,19 +364,6 @@ function Points_History() {
                                     );
                                 })}
                             </Form.Select>
-                        </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                        <Form.Group controlId="act_date">
-                            <Form.Label>기준 일자</Form.Label>
-                            <Form.Control
-                                type="date"
-                                defaultValue={moment(act_date).format(
-                                    'YYYY-MM-DD'
-                                )}
-                                name="act_date"
-                                onChange={handleChange}
-                            />
                         </Form.Group>
                     </Col>
                 </Row>
@@ -374,9 +382,9 @@ function Points_History() {
         );
 
         try {
-            const result = await MySwal.fire({
+            const res = await MySwal.fire({
                 title: '상벌점 수정',
-                html: modalContent,
+                html: modalContent(),
                 showCancelButton: true,
                 confirmButtonText: '확인',
                 cancelButtonText: '취소',
@@ -414,9 +422,9 @@ function Points_History() {
                 },
             });
 
-            if (result.isConfirmed) {
+            if (res.isConfirmed) {
                 const { pointType, point, reason, act_date, reasonCaption } =
-                    result.value;
+                    res.value;
 
                 await putData(`/api/points/history/${id}`, {
                     pointType,
@@ -425,8 +433,8 @@ function Points_History() {
                     act_date,
                     reasonCaption,
                 });
+                await fetchData();
 
-                fetchData();
                 MySwal.fire({
                     icon: 'success',
                     title: '상벌점 수정 성공',

@@ -76,7 +76,7 @@ function MyDorm_Repair() {
                 MySwal.fire({
                     icon: 'success',
                     title: '취소 성공',
-                    text: '수리 신청이 취소되었습니다.',
+                    text: '수리 신청이 성공적으로 취소되었습니다.',
                 });
             }
         } catch (error) {

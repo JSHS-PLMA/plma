@@ -198,14 +198,14 @@ function Dorm_Settings() {
     };
 
     const handleSave = async () => {
-        const modalRes = await MySwal.fire({
+        const res = await MySwal.fire({
             title: '정말로 저장하시겠습니까?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: '확인',
             cancelButtonText: '취소',
         });
-        if (!modalRes.isConfirmed) return;
+        if (!res.isConfirmed) return;
 
         const data = dormUsers
             .filter(
@@ -227,8 +227,7 @@ function Dorm_Settings() {
         console.log(data);
 
         try {
-            const res = await putData('/api/dorms', data);
-            console.log(res);
+            await putData('/api/dorms', data);
             MySwal.fire({
                 icon: 'success',
                 title: '저장 성공',

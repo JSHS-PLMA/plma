@@ -146,14 +146,14 @@ function Points_Reason() {
     const handleClickDelete = async (x) => {
         const { id } = x;
         try {
-            const modalRes = await MySwal.fire({
+            const res = await MySwal.fire({
                 title: `정말로 삭제하시겠습니까?`,
                 showCancelButton: true,
                 confirmButtonText: '삭제',
                 cancelButtonText: '취소',
             });
 
-            if (modalRes.isConfirmed) {
+            if (res.isConfirmed) {
                 await deleteData(`/api/points/reason/${id}`);
                 await fetchReasons();
 
@@ -176,7 +176,7 @@ function Points_Reason() {
     const handleClickEdit = async (x) => {
         const { id, title, plus, minus } = x;
         try {
-            const modalRes = await MySwal.fire({
+            const res = await MySwal.fire({
                 title: '사유 수정',
                 html: (
                     <form>
@@ -222,7 +222,7 @@ function Points_Reason() {
                 cancelButtonText: '취소',
             });
 
-            if (modalRes.isConfirmed) {
+            if (res.isConfirmed) {
                 const reasonTitle =
                     document.getElementById('reasonTitle').value;
                 const plus = document.getElementById('plus').value;

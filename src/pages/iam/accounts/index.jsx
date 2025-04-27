@@ -154,7 +154,7 @@ function IAM_Accounts() {
                 return;
             }
 
-            const modalRes = await MySwal.fire({
+            const res = await MySwal.fire({
                 title: 'IAM 권한 수정',
                 width: 800,
                 html: (
@@ -173,19 +173,23 @@ function IAM_Accounts() {
             });
             console.log(inputsRef.current);
 
-            if (modalRes.isConfirmed) {
+            if (res.isConfirmed) {
                 await putData(
                     `/api/iam/users/${userId}/permissons`,
                     inputsRef.current
                 );
-                MySwal.fire('성공적으로 수정되었습니다.', '', 'success');
+                MySwal.fire({
+                    icon: 'success',
+                    title: '권한 수정 성공',
+                    text: '권한이 성공적으로 수정되었습니다',
+                });
             }
         } catch (error) {
             console.error(error);
             MySwal.fire({
                 icon: 'error',
                 title: '권한 수정 실패',
-                text: '권한 수정에 실패했습니다.',
+                text: '권한 수정 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
             });
         }
     };

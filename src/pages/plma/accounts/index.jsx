@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import MySwal from '~shared/ui/sweetalert';
 import DataTable from '~shared/ui/datatable';
@@ -6,11 +6,12 @@ import { Card, Button } from 'react-bootstrap';
 
 import './index.scss';
 
-import { getData } from '~shared/scripts/requestData';
+import { getData, putData } from '~shared/scripts/requestData';
 
 function PLMA_Accounts() {
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
+    const inputsRef = useRef({});
 
     useEffect(() => {
         async function init() {
@@ -67,71 +68,89 @@ function PLMA_Accounts() {
     }, []);
 
     /// handleClickEdit 함수 작성, 내부 상태는 ref로 관리, 수정할 수 있는 swal2 모달 띄우기, html은 react로 작성하고 react-bootstrap의 컴포넌트 활용(form, control 등등), 수정 후 확인 버튼 누르면 수정 요청 보내기
-    const handleClickEdit = (x) => {
+    const handleClickEdit = async (x) => {
         const { id, stuid, grade, num, name, class: className } = x;
 
-        MySwal.fire({
+        const handleChange = (e) => {
+            const name = e.target.name;
+            const value = e.target.value;
+            inputsRef.current = {
+                ...inputsRef.current,
+                [name]: value,
+            };
+        };
+
+        const res = await MySwal.fire({
             title: '계정 정보 수정',
             html: (
                 <form id="editForm">
                     <div className="form-group">
-                        <label htmlFor="editStuid">학번</label>
+                        <label htmlFor="stuid">학번</label>
                         <input
-                            type="text"
                             className="form-control"
-                            id="editStuid"
+                            name="stuid"
                             defaultValue={stuid}
+                            onChange={handleChange}
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="editName">성명</label>
+                        <label htmlFor="name">성명</label>
                         <input
-                            type="text"
                             className="form-control"
-                            id="editName"
+                            name="name"
                             defaultValue={name}
+                            onChange={handleChange}
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="editGrade">학년</label>
+                        <label htmlFor="grade">학년</label>
                         <input
-                            type="text"
                             className="form-control"
-                            id="editGrade"
+                            name="grade"
                             defaultValue={grade}
+                            onChange={handleChange}
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="editClass">반</label>
+                        <label htmlFor="class">반</label>
                         <input
-                            type="text"
                             className="form-control"
-                            id="editClass"
+                            name="class"
                             defaultValue={className}
+                            onChange={handleChange}
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="editNum">번호</label>
+                        <label htmlFor="num">번호</label>
                         <input
-                            type="text"
                             className="form-control"
-                            id="editNum"
+                            name="num"
                             defaultValue={num}
+                            onChange={handleChange}
                         />
                     </div>
                 </form>
             ),
             showCancelButton: true,
             confirmButtonText: '수정',
-            preConfirm: () => {
-                // const editStuid = document.getElementById('editStuid').value;
-                // const editName = document.getElementById('editName').value;
-                // const editGrade = document.getElementById('editGrade').value;
-                // const editClass = document.getElementById('editClass').value;
-                // const editNum = document.getElementById('editNum').value;
-                //로직작성
-            },
         });
+        if (res.isConfirmed) {
+            try {
+                await putData(`/api/points/users/${id}`, inputsRef.current);
+                MySwal.fire({
+                    icon: 'success',
+                    title: '수정 성공',
+                    text: '계정 정보가 성공적으로 수정되었습니다.',
+                });
+            } catch (error) {
+                console.error(error);
+                MySwal.fire({
+                    icon: 'error',
+                    title: '수정 실패',
+                    text: '계정 정보 수정 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+                });
+            }
+        }
     };
 
     return (

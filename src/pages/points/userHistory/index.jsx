@@ -45,7 +45,6 @@ function Points_UserHistory() {
                     etc,
                     points: plus - minus,
                 });
-                setupTable(user);
                 setColumns([
                     { data: '선택', orderable: false },
                     { data: 'ID', className: 'dt-id' },
@@ -54,39 +53,14 @@ function Points_UserHistory() {
                     { data: '성명 (학번)', className: 'dt-link' },
                     {
                         className: 'dt-content',
-                        data: (
-                            <Dropdown
-                                onClick={optionHandler}
-                                autoClose="outside"
-                            >
-                                <Dropdown.Toggle
-                                    variant="primary"
-                                    id="dropdown-basic"
-                                    size="sm"
-                                >
-                                    반영 내용
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    {optionList.map((x, idx) => (
-                                        <Dropdown.Item
-                                            key={idx}
-                                            active={x.view}
-                                            onClick={(e) =>
-                                                optionSelect(e, idx, optionList)
-                                            }
-                                        >
-                                            {x.data}
-                                        </Dropdown.Item>
-                                    ))}
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        ),
+                        data: null,
                         orderBase: 6,
                     },
                     { hidden: true },
                     { data: '사유', className: 'dt-reason' },
                     { data: '반영일시' },
                 ]);
+                setupTable(user);
             } catch (error) {
                 console.error(error);
             }
@@ -137,6 +111,34 @@ function Points_UserHistory() {
         });
 
         setTableData(userHistory);
+        setColumns((prev) => {
+            const newData = [...prev];
+            newData[5].data = (
+                <Dropdown onClick={optionHandler} autoClose="outside">
+                    <Dropdown.Toggle
+                        variant="primary"
+                        id="dropdown-basic"
+                        size="sm"
+                    >
+                        반영 내용
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        {optionList.map((x, idx) => (
+                            <Dropdown.Item
+                                key={idx}
+                                active={x.view}
+                                onClick={(e) =>
+                                    optionSelect(e, idx, optionList)
+                                }
+                            >
+                                {x.data}
+                            </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+                </Dropdown>
+            );
+            return newData;
+        });
     }
 
     function optionHandler(e) {

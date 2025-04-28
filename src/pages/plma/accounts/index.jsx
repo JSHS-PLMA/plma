@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import MySwal from '~shared/ui/sweetalert';
 import DataTable from '~shared/ui/datatable';
-import { Card, Button } from 'react-bootstrap';
+import { Card, Button, Form, Row, Col } from 'react-bootstrap';
 
 import './index.scss';
 
@@ -69,7 +69,7 @@ function PLMA_Accounts() {
 
     /// handleClickEdit 함수 작성, 내부 상태는 ref로 관리, 수정할 수 있는 swal2 모달 띄우기, html은 react로 작성하고 react-bootstrap의 컴포넌트 활용(form, control 등등), 수정 후 확인 버튼 누르면 수정 요청 보내기
     const handleClickEdit = async (x) => {
-        const { id, stuid, grade, num, name, class: className } = x;
+        const { id, grade, num, name, class: classNum } = x; //stuid
 
         const handleChange = (e) => {
             const name = e.target.name;
@@ -83,60 +83,69 @@ function PLMA_Accounts() {
         const res = await MySwal.fire({
             title: '계정 정보 수정',
             html: (
-                <form id="editForm">
-                    <div className="form-group">
-                        <label htmlFor="stuid">학번</label>
-                        <input
-                            className="form-control"
-                            name="stuid"
-                            defaultValue={stuid}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="name">성명</label>
-                        <input
-                            className="form-control"
-                            name="name"
-                            defaultValue={name}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="grade">학년</label>
-                        <input
-                            className="form-control"
-                            name="grade"
-                            defaultValue={grade}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="class">반</label>
-                        <input
-                            className="form-control"
-                            name="class"
-                            defaultValue={className}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="num">번호</label>
-                        <input
-                            className="form-control"
-                            name="num"
-                            defaultValue={num}
-                            onChange={handleChange}
-                        />
-                    </div>
-                </form>
+                <Form className="editForm">
+                    <Row>
+                        <Col>
+                            <Form.Group controlId="name">
+                                <Form.Label>성명</Form.Label>
+                                <Form.Control
+                                    name="name"
+                                    defaultValue={name}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+
+                    <Row>
+                        <Col>
+                            <Form.Group controlId="grade">
+                                <Form.Label>학년</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min="1"
+                                    max="3"
+                                    name="grade"
+                                    defaultValue={grade}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col>
+                            <Form.Group controlId="class">
+                                <Form.Label>반</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min="1"
+                                    max="4"
+                                    name="class"
+                                    defaultValue={classNum}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col>
+                            <Form.Group controlId="num">
+                                <Form.Label>번호</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min="1"
+                                    max="22"
+                                    name="num"
+                                    defaultValue={num}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </Form>
             ),
             showCancelButton: true,
             confirmButtonText: '수정',
         });
         if (res.isConfirmed) {
             try {
-                await putData(`/api/points/users/${id}`, inputsRef.current);
+                await putData(`/api/points/users/${id}`, inputsRef.current); // 미구현
                 MySwal.fire({
                     icon: 'success',
                     title: '수정 성공',

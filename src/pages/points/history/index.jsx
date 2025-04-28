@@ -40,7 +40,6 @@ function Points_History() {
     useEffect(() => {
         async function init(allData = false) {
             try {
-                await fetchData(allData);
                 setColumns([
                     { data: '선택', orderable: false },
                     { data: 'ID', className: 'dt-id' },
@@ -54,33 +53,7 @@ function Points_History() {
                     { hidden: true },
                     {
                         className: 'dt-content',
-                        data: (
-                            <Dropdown
-                                onClick={optionHandler}
-                                autoClose="outside"
-                            >
-                                <Dropdown.Toggle
-                                    variant="primary"
-                                    id="dropdown-basic"
-                                    size="sm"
-                                >
-                                    반영 내용
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    {optionList.map((x, idx) => (
-                                        <Dropdown.Item
-                                            key={idx}
-                                            active={x.view == true}
-                                            onClick={(e) =>
-                                                optionSelect(e, idx, optionList)
-                                            }
-                                        >
-                                            {x.data}
-                                        </Dropdown.Item>
-                                    ))}
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        ),
+                        data: null,
                         orderBase: 7,
                     },
                     { hidden: true },
@@ -88,6 +61,7 @@ function Points_History() {
                     { data: '반영일시' },
                     { data: '#', orderable: false },
                 ]);
+                await fetchData(allData);
             } catch (error) {
                 console.error(error);
             }
@@ -124,7 +98,11 @@ function Points_History() {
 
             return [
                 <Form.Check key={`checkbox-${id}`} type="checkbox">
-                    <Form.Check.Input type="checkbox" isValid />
+                    <Form.Check.Input
+                        type="checkbox"
+                        name={`checkbox-${id}`}
+                        isValid
+                    />
                 </Form.Check>,
                 id,
                 moment(date).format('YYYY-MM-DD'),
@@ -171,6 +149,28 @@ function Points_History() {
         });
 
         setTableData(dataList);
+        setColumns((prev) => {
+            const newData = [...prev];
+            newData[6].data = (
+                <Dropdown onClick={optionHandler} autoClose="outside">
+                    <Dropdown.Toggle size="sm">반영 내용</Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        {optionList.map((x, idx) => (
+                            <Dropdown.Item
+                                key={`dropdown-${idx}`}
+                                active={x.view}
+                                onClick={(e) =>
+                                    optionSelect(e, idx, optionList)
+                                }
+                            >
+                                {x.data}
+                            </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+                </Dropdown>
+            );
+            return newData;
+        });
     }
 
     function optionHandler(e) {
@@ -198,15 +198,13 @@ function Points_History() {
 
     function handleSelectReason(e) {
         const reasonId = e.target.value;
-        const reasonCaption = reasonsRef.current.find(
-            (x) => x.id == reasonId
-        ).title;
-        document.getElementById('reasonCaption').value = reasonCaption; // 살짝 좋지 않은 방법
+        const title = reasonsRef.current.find((x) => x.id == reasonId).title;
+        document.getElementById('reason_caption').value = title; // 살짝 좋지 않은 방법
 
         inputsRef.current = {
             ...inputsRef.current,
             reason: reasonId,
-            reasonCaption,
+            reason_caption: title,
         };
     }
 
@@ -304,11 +302,11 @@ function Points_History() {
 
         inputsRef.current = {};
 
-        const modalContent = () => (
-            <Form id="editForm" className="p-3">
-                <Row className="mb-3">
-                    <Col md={6}>
-                        <Form.Group controlId="pointType">
+        const modalContent = (
+            <Form className="edit-form">
+                <Row>
+                    <Col>
+                        <Form.Group controlId="point_type">
                             <Form.Label>상벌점 유형</Form.Label>
                             <Form.Select
                                 defaultValue={pointType}
@@ -320,7 +318,20 @@ function Points_History() {
                             </Form.Select>
                         </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col>
+                        <Form.Group controlId="act_date">
+                            <Form.Label>기준 일자</Form.Label>
+                            <Form.Control
+                                type="date"
+                                defaultValue={moment(act_date).format(
+                                    'YYYY-MM-DD'
+                                )}
+                                name="act_date"
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col>
                         <Form.Group controlId="point">
                             <Form.Label>점수</Form.Label>
                             <Form.Control
@@ -334,21 +345,8 @@ function Points_History() {
                         </Form.Group>
                     </Col>
                 </Row>
-                <Row className="mb-3">
-                    <Col md={4}>
-                        <Form.Group controlId="act_date">
-                            <Form.Label>기준 일자</Form.Label>
-                            <Form.Control
-                                type="date"
-                                defaultValue={moment(act_date).format(
-                                    'YYYY-MM-DD'
-                                )}
-                                name="act_date"
-                                onChange={handleChange}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={8}>
+                <Row>
+                    <Col>
                         <Form.Group controlId="reason">
                             <Form.Label>기준 규정</Form.Label>
                             <Form.Select
@@ -358,7 +356,10 @@ function Points_History() {
                             >
                                 {reasonsRef.current.map((item) => {
                                     return (
-                                        <option key={item.id} value={item.id}>
+                                        <option
+                                            key={`option-${item.id}`}
+                                            value={item.id}
+                                        >
                                             {item.title}
                                         </option>
                                     );
@@ -367,24 +368,28 @@ function Points_History() {
                         </Form.Group>
                     </Col>
                 </Row>
-                <Form.Group controlId="reasonCaption" className="mb-3">
-                    <Form.Label>사유</Form.Label>
-                    <Form.Control
-                        as="textarea"
-                        rows={2}
-                        placeholder="사유를 입력하세요"
-                        defaultValue={reason_caption}
-                        onChange={handleChange}
-                        name="reasonCaption"
-                    />
-                </Form.Group>
+                <Row>
+                    <Col>
+                        <Form.Group controlId="reason_caption">
+                            <Form.Label>사유</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={2}
+                                placeholder="사유를 입력하세요"
+                                defaultValue={reason_caption}
+                                name="reason_caption"
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+                    </Col>
+                </Row>
             </Form>
         );
 
         try {
             const res = await MySwal.fire({
                 title: '상벌점 수정',
-                html: modalContent(),
+                html: modalContent,
                 showCancelButton: true,
                 confirmButtonText: '확인',
                 cancelButtonText: '취소',
@@ -394,7 +399,7 @@ function Points_History() {
                         point,
                         reason,
                         act_date,
-                        reasonCaption,
+                        reason_caption,
                     } = inputsRef.current;
 
                     if (
@@ -403,7 +408,7 @@ function Points_History() {
                             point ||
                             reason ||
                             act_date ||
-                            reasonCaption
+                            reason_caption
                         )
                     ) {
                         MySwal.showValidationMessage(
@@ -412,27 +417,15 @@ function Points_History() {
                         return false;
                     }
 
-                    return {
-                        pointType,
-                        point,
-                        reason,
-                        act_date,
-                        reasonCaption,
-                    };
+                    return { ...inputsRef.current, point: parseInt(point) };
                 },
             });
 
             if (res.isConfirmed) {
-                const { pointType, point, reason, act_date, reasonCaption } =
-                    res.value;
+                // const { pointType, point, reason, act_date, reason_caption } =
+                //     res.value;
 
-                await putData(`/api/points/history/${id}`, {
-                    pointType,
-                    point: parseInt(point),
-                    reason,
-                    act_date,
-                    reasonCaption,
-                });
+                await putData(`/api/points/history/${id}`, res.value);
                 await fetchData();
 
                 MySwal.fire({

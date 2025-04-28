@@ -114,6 +114,13 @@ function Dorm_Repair() {
                 <DropdownButton
                     key={`dropdown-${id}`}
                     id="dropdown-basic-button"
+                    variant={
+                        status === 'pending'
+                            ? 'secondary'
+                            : status === 'in_progress'
+                              ? 'primary'
+                              : 'success'
+                    }
                     title={
                         status === 'pending'
                             ? '접수 완료'
@@ -121,6 +128,7 @@ function Dorm_Repair() {
                               ? '처리 중'
                               : '처리 완료'
                     }
+                    className={status}
                     drop={'right'}
                     onSelect={(eventKey, event) =>
                         handleSelectStatus(id, event)

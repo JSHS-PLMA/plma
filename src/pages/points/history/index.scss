@@ -44,3 +44,17 @@
         }
     }
 }
+
+.edit-form {
+    padding: 1rem;
+    text-align: start;
+
+    .form-label {
+        padding-inline-start: 0.25rem;
+        font-size: 16px;
+    }
+
+    .row {
+        margin-bottom: 1rem;
+    }
+}

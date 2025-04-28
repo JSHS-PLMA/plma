@@ -1,4 +1,17 @@
 #points_reason {
+    // .dropdown-menu {
+    //     a {
+    //         color: #000;
+    //         background-color: #fff;
+    //         &:hover {
+    //             background-color: #e2e6ea;
+    //         }
+    //         &.active {
+    //             color: #fff;
+    //             background-color: #007bff;
+    //         }
+    //     }
+    // }
     .pointsReasonTable {
         .dt-reason {
             width: 60%;
@@ -38,5 +51,19 @@
                 margin-right: 0.1rem;
             }
         }
+    }
+}
+
+.edit-form {
+    padding: 1rem;
+    text-align: start;
+
+    .form-label {
+        padding-inline-start: 0.25rem;
+        font-size: 16px;
+    }
+
+    .row {
+        margin-bottom: 1rem;
     }
 }

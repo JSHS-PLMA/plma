@@ -188,10 +188,9 @@ function MyPoints_View() {
                             </Badge>
                             <Badge className="etc">기타: {userInfo.etc}</Badge>
                         </h1>
-
+                        <br />
+                        <Card.Text className="label">상벌점 기록</Card.Text>
                         <div className="tableWrap">
-                            <br />
-                            <Card.Text className="label">상벌점 기록</Card.Text>
                             <DataTable
                                 className="myPointsViewTable"
                                 columns={columns}
@@ -204,6 +203,7 @@ function MyPoints_View() {
                                 }}
                             />
                         </div>
+                        <Card.Text className="label">상벌점 통계</Card.Text>
                     </Card.Body>
                 </Card>
             </div>

@@ -7,7 +7,7 @@ const maxViewPage = 5;
 
 const DataTable = ({ columns, data, order, className, options, onClick }) => {
     const [sortMethod, setSortMethod] = useState({});
-    const [rowPerPage, setRowPerPage] = useState(10);
+    const [rowPerPage, setRowPerPage] = useState(options?.rowPerPage ?? 10);
     const [page, setPage] = useState(1);
     const [maxPage, setMaxPage] = useState(1);
 
@@ -74,7 +74,7 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
     function draw(wholeData, wholeColumns, sortMethodTo, pageTo) {
         const sortedData = sort(wholeData, wholeColumns, sortMethodTo);
         const slicedData =
-            options && options.pagination == false
+            options?.pagination == false
                 ? sortedData
                 : pagination(sortedData, rowPerPage, pageTo);
 
@@ -82,7 +82,7 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
             thRefWidths.current = fixWidth(thRef);
 
         setMaxPage(
-            options && options.pagination == false
+            options?.pagination == false
                 ? 1
                 : Math.ceil(sortedData.length / rowPerPage)
         );
@@ -164,7 +164,7 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
             <div className="tableWrapper">
                 <div className="tableHeader">
                     <div className="button_wrap">
-                        {options && options.button
+                        {options?.button
                             ? options.button.map((x, idx) => (
                                   <div className="tableButton" key={idx}>
                                       {x}
@@ -172,16 +172,12 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
                               ))
                             : ''}
                     </div>
-                    {options && options.search == false ? (
+                    {options?.search == false ? (
                         ''
                     ) : (
                         <div className="input_wrap">
                             <h1 className="filterText">
-                                {options &&
-                                options.language &&
-                                options.language.search
-                                    ? options.language.search
-                                    : 'Search: '}
+                                {options?.language?.search ?? 'Search: '}
                             </h1>
                             <input
                                 type="text"
@@ -282,7 +278,7 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
                     </table>
                 </div>
                 <div className="tablePagination">
-                    {options && options.pagination != false ? (
+                    {options?.pagination != false ? (
                         <Pagination>
                             <Pagination.Prev
                                 disabled={page <= 1}

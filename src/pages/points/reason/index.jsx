@@ -24,44 +24,18 @@ function Points_Reason() {
     useEffect(() => {
         async function init() {
             try {
-                await fetchReasons();
                 setColumns([
                     { data: '번호' },
-                    { data: '반영 내용', className: 'dt-reason' },
+                    { data: '사유', className: 'dt-reason' },
                     {
-                        data: (
-                            <Dropdown
-                                onClick={optionHandler}
-                                autoClose="outside"
-                            >
-                                <Dropdown.Toggle
-                                    variant="primary"
-                                    id="dropdown-basic"
-                                    size="sm"
-                                >
-                                    반영 내용
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    {optionList.map((x, idx) => (
-                                        <Dropdown.Item
-                                            key={idx}
-                                            active={x.view == true}
-                                            onClick={(e) =>
-                                                optionSelect(e, idx, optionList)
-                                            }
-                                        >
-                                            {x.data}
-                                        </Dropdown.Item>
-                                    ))}
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        ),
+                        data: null,
                         className: 'dt-content',
                         orderBase: 3,
                     },
                     { hidden: true },
                     { data: '#', className: 'dt-button' },
                 ]);
+                await fetchReasons();
             } catch (error) {
                 console.error(error);
             }
@@ -117,6 +91,30 @@ function Points_Reason() {
         });
 
         setTableData(dataList);
+        setColumns((prev) => {
+            const newData = [...prev];
+            newData[2].data = (
+                <Dropdown onClick={optionHandler} autoClose="outside">
+                    <Dropdown.Toggle id="dropdown-basic" size="sm">
+                        반영 내용
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        {optionList.map((x, idx) => (
+                            <Dropdown.Item
+                                key={idx}
+                                active={x.view}
+                                onClick={(e) =>
+                                    optionSelect(e, idx, optionList)
+                                }
+                            >
+                                {x.data}
+                            </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+                </Dropdown>
+            );
+            return newData;
+        });
     }
 
     function optionHandler(e) {
@@ -140,6 +138,35 @@ function Points_Reason() {
 
         setOptionList(arr);
         setupTable(finalData);
+        setColumns((prev) => {
+            const newData = [...prev];
+            newData[2].data = (
+                <Dropdown onClick={optionHandler} autoClose="outside">
+                    <Dropdown.Toggle
+                        variant="primary"
+                        id="dropdown-basic"
+                        size="sm"
+                    >
+                        반영 내용
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        {optionList.map((x, idx) => (
+                            <Dropdown.Item
+                                key={idx}
+                                active={x.view}
+                                onClick={(e) =>
+                                    optionSelect(e, idx, optionList)
+                                }
+                            >
+                                {x.data}
+                            </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+                </Dropdown>
+            );
+
+            return newData;
+        });
     }
 
     /// handle delete
@@ -179,43 +206,41 @@ function Points_Reason() {
             const res = await MySwal.fire({
                 title: '사유 수정',
                 html: (
-                    <form>
-                        <div className="form-group mb-3">
-                            <label htmlFor="reasonTitle" className="form-label">
-                                사유
-                            </label>
-                            <Form.Control
-                                type="text"
-                                id="reasonTitle"
-                                placeholder="사유를 입력하세요"
-                                defaultValue={title}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <Row className="mb-3">
-                                <Col md={6}>
-                                    <Form.Group controlId="plus">
-                                        <Form.Label>상점</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            placeholder="상점을 입력하세요"
-                                            defaultValue={plus}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col md={6}>
-                                    <Form.Group controlId="minus">
-                                        <Form.Label>벌점</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            placeholder="벌점을 입력하세요"
-                                            defaultValue={minus}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                        </div>
-                    </form>
+                    <Form className="edit-form">
+                        <Row>
+                            <Col>
+                                <Form.Group controlId="title">
+                                    <Form.Label>사유</Form.Label>
+                                    <Form.Control
+                                        placeholder="사유를 입력하세요"
+                                        defaultValue={title}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                <Form.Group controlId="plus">
+                                    <Form.Label>상점</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        placeholder="상점을 입력하세요"
+                                        defaultValue={plus}
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col>
+                                <Form.Group controlId="minus">
+                                    <Form.Label>벌점</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        placeholder="벌점을 입력하세요"
+                                        defaultValue={minus}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                    </Form>
                 ),
                 showCancelButton: true,
                 confirmButtonText: '수정',

@@ -25,45 +25,6 @@ function MyPoints_View() {
 
     useEffect(() => {
         async function init() {
-            setColumns([
-                // { data: '선택', orderable: false },
-                { data: 'ID', className: 'dt-id' },
-                { data: '기준일자' },
-                { data: '권한자' },
-                { data: '성명 (학번)', className: 'dt-link' },
-                {
-                    className: 'dt-content',
-                    data: (
-                        <Dropdown onClick={optionHandler} autoClose="outside">
-                            <Dropdown.Toggle
-                                variant="primary"
-                                id="dropdown-basic"
-                                size="sm"
-                            >
-                                반영 내용
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                {optionList.map((x, idx) => (
-                                    <Dropdown.Item
-                                        key={idx}
-                                        active={x.view == true}
-                                        onClick={(e) =>
-                                            optionSelect(e, idx, optionList)
-                                        }
-                                    >
-                                        {x.data}
-                                    </Dropdown.Item>
-                                ))}
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    ),
-                    orderBase: 5,
-                },
-                { hidden: true },
-                { data: '사유', className: 'dt-reason' },
-                { data: '반영일시' },
-                { data: '#', orderable: false },
-            ]);
             try {
                 const user = await getData('/api/points/user_history', {
                     userID,
@@ -82,6 +43,22 @@ function MyPoints_View() {
                     points: plus - minus,
                 });
 
+                setColumns([
+                    // { data: '선택', orderable: false },
+                    { data: 'ID', className: 'dt-id' },
+                    { data: '기준일자' },
+                    { data: '권한자' },
+                    { data: '성명 (학번)', className: 'dt-link' },
+                    {
+                        className: 'dt-content',
+                        data: null,
+                        orderBase: 5,
+                    },
+                    { hidden: true },
+                    { data: '사유', className: 'dt-reason' },
+                    { data: '반영일시' },
+                    { data: '#', orderable: false },
+                ]);
                 setupTable(user);
             } catch (error) {
                 console.error(error);
@@ -118,7 +95,7 @@ function MyPoints_View() {
                 moment(date).format('YYYY-MM-DD'),
                 teacher.name,
 
-                <a key={`href_${idx}`} href="#">
+                <a key={`user-link-${idx}`} href="#">
                     {name} ({stuid})
                 </a>,
                 <>
@@ -132,13 +109,39 @@ function MyPoints_View() {
                     ? reason_caption.substring(0, 40) + '...'
                     : reason_caption,
                 moment(act_date).format('YYYY-MM-DD'),
-                <Button key={`objection_${idx}`} variant="danger" size="sm">
+                <Button
+                    key={`button-objection-${idx}`}
+                    variant="danger"
+                    size="sm"
+                >
                     이의 제기
                 </Button>,
             ];
         });
 
         setTableData(userHistory);
+        setColumns((prev) => {
+            const newData = [...prev];
+            newData[4].data = (
+                <Dropdown onClick={optionHandler} autoClose="outside">
+                    <Dropdown.Toggle size="sm">반영 내용</Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        {optionList.map((x, idx) => (
+                            <Dropdown.Item
+                                key={`dropdown-${idx}`}
+                                active={x.view}
+                                onClick={(e) =>
+                                    optionSelect(e, idx, optionList)
+                                }
+                            >
+                                {x.data}
+                            </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+                </Dropdown>
+            );
+            return newData;
+        });
     }
 
     function optionHandler(e) {

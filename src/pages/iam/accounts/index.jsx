@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import DataTable from '~shared/ui/datatable';
-import { Card, Button } from 'react-bootstrap';
+import { Card, Button, Row, Col, Form } from 'react-bootstrap';
 
 import './index.scss';
 
@@ -194,6 +194,100 @@ function IAM_Accounts() {
         }
     };
 
+    const handleClickEdit = async (x) => {
+        const { id, grade, num, name, class: classNum } = x; //stuid
+
+        const handleChange = (e) => {
+            const name = e.target.name;
+            const value = e.target.value;
+            inputsRef.current = {
+                ...inputsRef.current,
+                [name]: value,
+            };
+        };
+
+        const res = await MySwal.fire({
+            title: '계정 정보 수정',
+            html: (
+                <Form className="editForm">
+                    <Row>
+                        <Col>
+                            <Form.Group controlId="name">
+                                <Form.Label>성명</Form.Label>
+                                <Form.Control
+                                    name="name"
+                                    defaultValue={name}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+
+                    <Row>
+                        <Col>
+                            <Form.Group controlId="grade">
+                                <Form.Label>학년</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min="1"
+                                    max="3"
+                                    name="grade"
+                                    defaultValue={grade}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col>
+                            <Form.Group controlId="class">
+                                <Form.Label>반</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min="1"
+                                    max="4"
+                                    name="class"
+                                    defaultValue={classNum}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col>
+                            <Form.Group controlId="num">
+                                <Form.Label>번호</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min="1"
+                                    max="22"
+                                    name="num"
+                                    defaultValue={num}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </Form>
+            ),
+            showCancelButton: true,
+            confirmButtonText: '수정',
+        });
+        if (res.isConfirmed) {
+            try {
+                await putData(`/api/iam/users/${id}`, inputsRef.current); // 미구현
+                MySwal.fire({
+                    icon: 'success',
+                    title: '수정 성공',
+                    text: '계정 정보가 성공적으로 수정되었습니다.',
+                });
+            } catch (error) {
+                console.error(error);
+                MySwal.fire({
+                    icon: 'error',
+                    title: '수정 실패',
+                    text: '계정 정보 수정 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+                });
+            }
+        }
+    };
+
     useEffect(() => {
         async function init() {
             try {
@@ -224,6 +318,7 @@ function IAM_Accounts() {
                                 className="rowButton"
                                 variant="primary"
                                 size="sm"
+                                onClick={() => handleClickEdit(user)}
                             >
                                 편집
                             </Button>

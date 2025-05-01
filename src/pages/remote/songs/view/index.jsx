@@ -8,6 +8,7 @@ import DataTable from '~shared/ui/datatable';
 
 import { getData } from '~shared/scripts/requestData.js';
 import moment from 'moment';
+import { musicPlay } from '~shared/scripts/musicplay.js';
 
 const TITLE = import.meta.env.VITE_TITLE;
 
@@ -53,6 +54,8 @@ function Songs_View() {
         let lastDay = new Date(end);
         setStartDate(firstDay);
         setEndDate(lastDay);
+
+        musicPlay(canvasRef.current);
     }
 
     return (
@@ -138,12 +141,10 @@ function Songs_View() {
                                     </div>
 
                                     <div className="music_btn">
-                                        <div className="play button">
-                                            <canvas
-                                                ref={canvasRef}
-                                                className="canvas"
-                                            ></canvas>
-                                        </div>
+                                        <canvas
+                                            ref={canvasRef}
+                                            className="canvas"
+                                        ></canvas>
                                     </div>
                                 </div>
                                 <div className="next button">

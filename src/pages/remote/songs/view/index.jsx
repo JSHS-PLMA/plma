@@ -25,6 +25,9 @@ function Songs_View() {
     const [imgMode, setImgMode] = useState('maxresdefault');
 
     const canvasRef = useRef(null);
+    const audioRef = useRef(null);
+
+    const playMusicRef = useRef(null);
 
     useEffect(() => {
         init();
@@ -55,7 +58,19 @@ function Songs_View() {
         setStartDate(firstDay);
         setEndDate(lastDay);
 
-        musicPlay(canvasRef.current);
+        playMusicRef.current = musicPlay(canvasRef.current, audioRef.current);
+    }
+
+    async function playMusic() {
+        const audio = audioRef.current;
+        const canvas = canvasRef.current;
+
+        const func = playMusicRef.current;
+
+        await audio.load();
+        audio.src = '/song1.mp3';
+
+        func.playMusic();
     }
 
     return (
@@ -144,7 +159,13 @@ function Songs_View() {
                                         <canvas
                                             ref={canvasRef}
                                             className="canvas"
+                                            onClick={playMusic}
                                         ></canvas>
+                                        <audio
+                                            className="audio"
+                                            hidden
+                                            ref={audioRef}
+                                        ></audio>
                                     </div>
                                 </div>
                                 <div className="next button">

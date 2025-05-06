@@ -36,12 +36,12 @@ export function musicPlay(_canvas, _audio) {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Circle
-        // ctx.beginPath();
-        // ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        // ctx.strokeStyle = 'black';
-        // ctx.lineWidth = 2;
-        // ctx.stroke();
+        //Draw Circle
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
         // Draw Play Button (Triangle pointing right)
         ctx.beginPath();

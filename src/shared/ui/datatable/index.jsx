@@ -265,7 +265,16 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
                                                     <td
                                                         key={iidx}
                                                         className={`${columns[iidx] ? (columns[iidx].className ? columns[iidx].className : '') : ''}`}
-                                                        onClick={onClick}
+                                                        onClick={(e) => {
+                                                            onClick(
+                                                                e,
+                                                                (page - 1) *
+                                                                    rowPerPage +
+                                                                    idx,
+                                                                idx,
+                                                                iidx
+                                                            );
+                                                        }}
                                                     >
                                                         {item}
                                                     </td>

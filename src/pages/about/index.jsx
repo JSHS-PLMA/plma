@@ -57,7 +57,7 @@ function Home() {
             ctx,
             stageSize
         );
-        Person(ctx, stageSize);
+        //Person(ctx, stageSize);
 
         drawTriangles();
         // drawVoronoi();
@@ -74,7 +74,7 @@ function Home() {
                 ></canvas>
 
                 <div className="textwrap">
-                    <h1 className="name">강창완</h1>
+                    <h1 className="name">Comming Soon...</h1>
                 </div>
             </div>
         </>

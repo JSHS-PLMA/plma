@@ -6,7 +6,7 @@ import './index.scss';
 import { Card, DropdownButton, Dropdown } from 'react-bootstrap';
 import DataTable from '~shared/ui/datatable';
 
-import { getData } from '~shared/scripts/requestData.js';
+import { getData, postData } from '~shared/scripts/requestData.js';
 import moment from 'moment';
 import { musicPlay } from '~shared/scripts/musicplay.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -22,23 +22,16 @@ function Songs_View() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    const [musicImgId, setMusicImgId] = useState('TeccAtqd5K8');
-    const [imgMode, setImgMode] = useState('maxresdefault');
-
     const playerRef = useRef(null);
     const [player, setPlayer] = useState(null);
     const [playerShadow, setPlayerShadow] = useState(null);
 
-    const [voted, setVoted] = useState(true);
+    const [playList, setPlayList] = useState([]);
+    const [currentMusic, setCurrentMusic] = useState();
+    const [currentMusicIdx, setCurrentMusicIdx] = useState();
 
     const [playing, setPlaying] = useState();
-
     const [isOpen, setIsOpen] = useState(false);
-
-    const canvasRef = useRef(null);
-    const audioRef = useRef(null);
-
-    const playMusicRef = useRef(null);
 
     useEffect(() => {
         init();
@@ -65,120 +58,39 @@ function Songs_View() {
     };
 
     async function init() {
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        document.body.appendChild(tag);
+        const data = await getData('/api/remote/songs', {
+            week: '2025-05-07',
+        });
 
-        // Called by YouTube API when ready
-        window.onYouTubeIframeAPIReady = () => {
-            const ytPlayer = new window.YT.Player('ytplayer', {
-                events: {
-                    onReady: (e) => {
-                        setPlayer(ytPlayer);
-                    },
-                    onStateChange: (e) => onPlayerStateChange,
-                },
-            });
+        setPlayList(data);
 
-            const ytPlayerShadow = new window.YT.Player('ytplayer_shadow', {
-                events: {
-                    onReady: (e) => {
-                        e.target.setVolume(0);
-                        setPlayerShadow(ytPlayerShadow);
-                    },
-                    onStateChange: (e) => onPlayerStateChange,
-                },
-            });
-        };
+        if (data.length > 0) setCurrentMusicIdx(0);
 
-        setTableData([
-            [
-                1,
-                <p>
-                    <span className="song_title">
-                        Oasis - Don't Look Back In Anger
-                    </span>
-                    <span className="song_artist">Oasis</span>
-                </p>,
-                <span className="song_icon"></span>,
-            ],
-            [
-                2,
-                <p>
-                    <span className="song_title">
-                        Carly Rae Jepsen - Run Away with me
-                    </span>
-                    <span className="song_artist">Carly Rae Jepsen</span>
-                </p>,
-                <span className="song_icon"></span>,
-            ],
-            [
-                3,
-                <p>
-                    <span className="song_title">
-                        Carly Rae Jepsen - Run Away with me
-                    </span>
-                    <span className="song_artist">Carly Rae Jepsen</span>
-                </p>,
-                <span className="song_icon"></span>,
-            ],
-            [
-                4,
-                <p>
-                    <span className="song_title">
-                        Carly Rae Jepsen - Run Away with me
-                    </span>
-                    <span className="song_artist">Carly Rae Jepsen</span>
-                </p>,
-                <span className="song_icon"></span>,
-            ],
-            [
-                5,
-                <p>
-                    <span className="song_title">
-                        Carly Rae Jepsen - Run Away with me
-                    </span>
-                    <span className="song_artist">Carly Rae Jepsen</span>
-                </p>,
-                <span className="song_icon"></span>,
-            ],
-            [
-                6,
-                <p>
-                    <span className="song_title">
-                        Carly Rae Jepsen - Run Away with me
-                    </span>
-                    <span className="song_artist">Carly Rae Jepsen</span>
-                </p>,
-                <span className="song_icon"></span>,
-            ],
-            [
-                7,
-                <p>
-                    <span className="song_title">
-                        Carly Rae Jepsen - Run Away with me
-                    </span>
-                    <span className="song_artist">Carly Rae Jepsen</span>
-                </p>,
-                <span className="song_icon selected"></span>,
-            ],
-            [
-                8,
-                <p>
-                    <span className="song_title">
-                        Carly Rae Jepsen - Run Away with me
-                    </span>
-                    <span className="song_artist">Carly Rae Jepsen</span>
-                </p>,
-                <span className="song_icon"></span>,
-            ],
-            [9, 'Carly Rae Jepsen ...'],
-        ]);
-        setColumns([
-            { data: '순위', orderable: false, className: 'rank' },
-            { data: '제목', orderable: false, className: 'songTitle' },
-            { data: '투표', orderable: false, className: 'voted' },
-        ]);
+        // const tag = document.createElement('script');
+        // tag.src = 'https://www.youtube.com/iframe_api';
+        // document.body.appendChild(tag);
+
+        // // Called by YouTube API when ready
+        // window.onYouTubeIframeAPIReady = () => {
+        //     const ytPlayer = new window.YT.Player('ytplayer', {
+        //         events: {
+        //             onReady: (e) => {
+        //                 setPlayer(ytPlayer);
+        //             },
+        //             onStateChange: (e) => onPlayerStateChange,
+        //         },
+        //     });
+
+        //     const ytPlayerShadow = new window.YT.Player('ytplayer_shadow', {
+        //         events: {
+        //             onReady: (e) => {
+        //                 e.target.setVolume(0);
+        //                 setPlayerShadow(ytPlayerShadow);
+        //             },
+        //             onStateChange: (e) => onPlayerStateChange,
+        //         },
+        //     });
+        // };
 
         let curr = new Date();
         let first = curr - (curr.getDay() - 1) * 24 * 60 * 60 * 1000;
@@ -187,20 +99,34 @@ function Songs_View() {
         let lastDay = new Date(end);
         setStartDate(firstDay);
         setEndDate(lastDay);
-
-        playMusicRef.current = musicPlay(canvasRef.current, audioRef.current);
     }
 
-    async function playMusic() {
-        const audio = audioRef.current;
-        const canvas = canvasRef.current;
+    function updateTableData(data) {
+        setTableData(
+            data.map((x, idx) => [
+                idx + 1,
+                <span className="title_wrapper">
+                    <span className="song_title song_title_text">
+                        {cutText(x.title, 40)}
+                    </span>
+                    <span className="song_artist song_title_text">
+                        {x.artist}
+                    </span>
+                </span>,
+                <span
+                    className={`song_icon ${x.userVoted ? 'selected' : ''}`}
+                    onClick={() => {
+                        songVote(x, x.id);
+                    }}
+                ></span>,
+            ])
+        );
 
-        const func = playMusicRef.current;
-
-        await audio.load();
-        audio.src = '/song1.mp3';
-
-        func.playMusic();
+        setColumns([
+            { data: '순위', orderable: false, className: 'rank' },
+            { data: '제목', orderable: false, className: 'songTitle' },
+            { data: '투표', orderable: false, className: 'voted' },
+        ]);
     }
 
     const CustomToggle = React.forwardRef(
@@ -241,8 +167,84 @@ function Songs_View() {
         }
     );
 
-    function songClick(e, idxData, idxRow, idxTd) {
-        console.log(idxData, idxTd);
+    function cutText(text, len = 20) {
+        return text
+            ? text.length > len
+                ? text.substring(0, len) + '...'
+                : text
+            : '';
+    }
+
+    const MarqueeText = ({ text, len = 20 }) => {
+        if (!text) return '';
+        const shouldScroll = text.length >= len;
+
+        return (
+            <div className="marquee-wrapper">
+                {shouldScroll ? (
+                    <div className="marquee-content">
+                        <span aria-hidden="true">{text}&nbsp;&nbsp;&nbsp;</span>
+                        <span>{text}&nbsp;&nbsp;&nbsp;</span>
+                    </div>
+                ) : (
+                    <span className="normal-text">{text}</span>
+                )}
+            </div>
+        );
+    };
+
+    function extractYouTubeVideoId(url) {
+        const regex =
+            /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+        const match = url.match(regex);
+
+        return match ? match[1] : null;
+    }
+
+    function formatSeconds(seconds) {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+
+        if (hrs > 0) {
+            return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        } else {
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+    }
+
+    async function songClick(e, idxData) {
+        if (idxData == currentMusicIdx) return;
+
+        setCurrentMusicIdx(idxData);
+    }
+
+    useEffect(() => {
+        if (!playList || currentMusicIdx == null) return;
+
+        const songData = playList[currentMusicIdx];
+
+        setCurrentMusic({
+            ...songData,
+            videoId: extractYouTubeVideoId(songData.ytlink),
+        });
+
+        updateTableData(playList);
+    }, [playList, currentMusicIdx]);
+
+    async function songVote(musicData, musicDataIdx) {
+        if (!musicData) return;
+
+        const res = await postData(`/api/remote/songs/${musicData.id}/vote`, {
+            vote: !musicData.userVoted,
+        });
+
+        const afterPlayList = [...playList]; // 새 배열 생성
+        afterPlayList[musicDataIdx] = {
+            ...musicData,
+            userVoted: !res.value,
+        };
+        setPlayList(afterPlayList);
     }
 
     return (
@@ -253,13 +255,17 @@ function Songs_View() {
                         <Card.Title>기상송 조회</Card.Title>
                     </Card.Header>
                     <Card.Body>
-                        <div className="music">
+                        <div className={`music ${currentMusic ? 0 : 'empty'}`}>
                             <div className="music_video_wrap">
                                 <div className="music_video shadow">
                                     <div className="iframe-container iframe_shadow">
                                         <iframe
                                             id="ytplayer_shadow"
-                                            src={`https://www.youtube-nocookie.com/embed/${musicImgId}?enablejsapi=1&loop=1&controls=0&playsinline=1&rel=0`}
+                                            src={
+                                                currentMusic
+                                                    ? `https://www.youtube-nocookie.com/embed/${currentMusic.videoId}?enablejsapi=1&loop=1&controls=0&playsinline=1&rel=0`
+                                                    : ''
+                                            }
                                             title="YouTube video player"
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                             allowFullScreen
@@ -273,7 +279,11 @@ function Songs_View() {
                                     <div className="iframe-container">
                                         <iframe
                                             id="ytplayer"
-                                            src={`https://www.youtube-nocookie.com/embed/${musicImgId}?enablejsapi=1&loop=1&controls=0&playsinline=1&rel=0`}
+                                            src={
+                                                currentMusic
+                                                    ? `https://www.youtube-nocookie.com/embed/${currentMusic.videoId}?enablejsapi=1&loop=1&controls=0&playsinline=1&rel=0`
+                                                    : ''
+                                            }
                                             title="YouTube video player"
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                             allowFullScreen
@@ -283,43 +293,95 @@ function Songs_View() {
                                     </div>
                                 </div>
 
-                                <div
-                                    className={`music_img_wrap ${playing ? 'playing' : ''}`}
-                                >
-                                    <img
-                                        className="music_img"
-                                        src={`http://i.ytimg.com/vi/${musicImgId}/${imgMode}.jpg`}
-                                        alt="music"
-                                    />
-                                </div>
+                                {currentMusic ? (
+                                    <div
+                                        className={`music_img_wrap ${playing ? 'playing' : ''}`}
+                                    >
+                                        <img
+                                            className="music_img"
+                                            src={currentMusic?.imgMode}
+                                            alt="music"
+                                        />
+                                    </div>
+                                ) : (
+                                    ''
+                                )}
                             </div>
 
                             <div className="music_vote">
                                 <button
-                                    className={`vote_button ${voted ? 'voted' : ''}`}
+                                    className={`vote_button ${currentMusic?.userVoted ? 'voted' : ''}`}
+                                    onClick={() => {
+                                        songVote(currentMusic, currentMusicIdx);
+                                    }}
                                 >
                                     <FontAwesomeIcon icon="fa-solid fa-check-to-slot" />{' '}
-                                    {voted ? '투표 완료' : '투표하기'}
+                                    <span></span>
                                 </button>
                             </div>
 
                             <div className="music_info">
-                                <div className="music_title">
-                                    Oasis - Don’t Look Back In Anger
+                                <div className="music_title music_infoBox">
+                                    <MarqueeText
+                                        text={currentMusic?.title}
+                                        len={45}
+                                    />
                                 </div>
-                                <div className="music_artist">
-                                    {playing ? 'Oasis' : 'Carly Rae Jepsen'}
+                                <div className="music_artist music_infoBox">
+                                    {currentMusic?.artist}
                                 </div>
                             </div>
 
                             <div className="music_play">
-                                <canvas
-                                    ref={canvasRef}
-                                    width="300"
-                                    height="300"
-                                    onClick={handlePlay}
-                                />
-                                <audio ref={audioRef} controls></audio>
+                                <div className="play_slider">
+                                    <div className="current_time music_time">
+                                        <span>3:14</span>
+                                    </div>
+
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max={(currentMusic?.duration || 0) * 10}
+                                    />
+
+                                    <div className="end_time music_time">
+                                        <span>
+                                            {formatSeconds(
+                                                currentMusic?.duration || 0
+                                            )}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="play_button">
+                                    <div
+                                        className={`prev_button music_button ${currentMusic && currentMusicIdx <= 0 ? 'disabled' : ''}`}
+                                        onClick={(e) => {
+                                            songClick(e, currentMusicIdx - 1);
+                                        }}
+                                    >
+                                        <span>
+                                            <FontAwesomeIcon icon="fa-solid fa-backward" />
+                                        </span>
+                                    </div>
+
+                                    <div className="playpause_button music_button">
+                                        <span>
+                                            <FontAwesomeIcon icon="fa-solid fa-play" />
+                                        </span>
+                                    </div>
+
+                                    <div
+                                        className={`next_button music_button ${currentMusic && currentMusicIdx + 1 >= playList.length ? 'disabled' : ''}`}
+                                        onClick={(e) => {
+                                            songClick(e, currentMusicIdx + 1);
+                                        }}
+                                    >
+                                        <span>
+                                            <FontAwesomeIcon icon="fa-solid fa-forward" />
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -369,10 +431,12 @@ function Songs_View() {
                                     data={tableData}
                                     columns={columns}
                                     options={{
-                                        rowPerPage: 8,
+                                        rowPerPage: 10,
                                         search: false,
+                                        highlightRowIndex: currentMusicIdx,
                                     }}
                                     onClick={songClick}
+                                    focus={currentMusicIdx || 0}
                                 />
                             </div>
                         </div>

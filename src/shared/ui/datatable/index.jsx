@@ -5,7 +5,15 @@ import './index.scss';
 
 const maxViewPage = 5;
 
-const DataTable = ({ columns, data, order, className, options, onClick }) => {
+const DataTable = ({
+    columns,
+    data,
+    order,
+    className,
+    options,
+    onClick,
+    focus,
+}) => {
     const [sortMethod, setSortMethod] = useState({});
     const [rowPerPage, setRowPerPage] = useState(options?.rowPerPage ?? 10);
     const [page, setPage] = useState(1);
@@ -14,8 +22,8 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
     const [filteredData, setFilteredData] = useState(data);
     const [viewData, setViewData] = useState(data);
 
-    const thRef = useRef([]);
-    const thRefWidths = useRef([]);
+    const colRef = useRef([]);
+    const colRefWidths = useRef([]);
 
     function pagination(sortedData, rowCount, pageTo) {
         const slicedData = sortedData.slice(
@@ -66,7 +74,7 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
             x.style.width = `${w}px`;
         });
 
-        thRefWidths.current = widths;
+        colRefWidths.current = widths;
 
         return widths;
     }
@@ -78,8 +86,8 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
                 ? sortedData
                 : pagination(sortedData, rowPerPage, pageTo);
 
-        if (thRefWidths.current.length == 0)
-            thRefWidths.current = fixWidth(thRef);
+        if (colRefWidths.current.length == 0)
+            colRefWidths.current = fixWidth(colRef);
 
         setMaxPage(
             options?.pagination == false
@@ -118,18 +126,25 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
     }
 
     useEffect(() => {
-        draw(
-            data,
-            columns,
-            {
-                column: order ? order[0] : 0,
-                asc: order ? order[1] === 'asc' : true,
-            },
-            1
-        );
+        if (data?.length > 0) {
+            const focusPage =
+                typeof focus === 'number'
+                    ? Math.floor(focus / rowPerPage) + 1
+                    : 1;
+
+            draw(
+                data,
+                columns,
+                {
+                    column: order ? order[0] : 0,
+                    asc: order ? order[1] === 'asc' : true,
+                },
+                focusPage
+            );
+        }
 
         function resize() {
-            thRefWidths.current = [];
+            colRefWidths.current = [];
             draw(
                 data,
                 columns,
@@ -146,7 +161,7 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
         return () => {
             window.removeEventListener('resize', resize);
         };
-    }, [data, order, columns]);
+    }, [focus, data, order, columns]);
 
     function pageList(x, max, maxView) {
         const overflow = max > maxView;
@@ -190,10 +205,14 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
                     )}
                 </div>
                 <div className="tableContent">
-                    <table className={`dataTable ${className}`}>
+                    <table className={`dataTable ${className ?? ''}`}>
                         <colgroup>
                             {columns.map((col, idx) => (
-                                <col key={idx} data-dt-column={idx}></col>
+                                <col
+                                    key={idx}
+                                    data-dt-column={idx}
+                                    ref={(el) => (colRef.current[idx] = el)}
+                                ></col>
                             ))}
                         </colgroup>
                         <thead>
@@ -233,9 +252,6 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
                                                             1
                                                         );
                                                 }}
-                                                ref={(el) =>
-                                                    (thRef.current[idx] = el)
-                                                }
                                             >
                                                 <span className="dt-column-title">
                                                     {col.data}
@@ -255,7 +271,15 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
                                 </tr>
                             ) : (
                                 viewData.map((row, idx) => (
-                                    <tr key={idx}>
+                                    <tr
+                                        key={idx}
+                                        className={
+                                            options?.highlightRowIndex ===
+                                            (page - 1) * rowPerPage + idx
+                                                ? 'highlighted-row'
+                                                : ''
+                                        }
+                                    >
                                         {row.map((item, iidx) => {
                                             if (!columns[iidx]) return '';
 
@@ -266,6 +290,9 @@ const DataTable = ({ columns, data, order, className, options, onClick }) => {
                                                         key={iidx}
                                                         className={`${columns[iidx] ? (columns[iidx].className ? columns[iidx].className : '') : ''}`}
                                                         onClick={(e) => {
+                                                            if (!onClick)
+                                                                return;
+
                                                             onClick(
                                                                 e,
                                                                 (page - 1) *

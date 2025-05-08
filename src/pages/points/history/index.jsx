@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 
 import moment from 'moment';
@@ -107,12 +108,9 @@ function Points_History() {
                 id,
                 moment(date).format('YYYY-MM-DD'),
                 teacher.name,
-                <a
-                    key={`user-link-${id}`}
-                    href={`/points/user_history/${user.id}`}
-                >
-                    {user ? user.name : ''} ({user ? user.stuid : ''})
-                </a>,
+                <NavLink to={`/points/user_history/${user.id}`} key={id}>
+                    {user?.name || ''} ({user?.stuid || ''})
+                </NavLink>,
                 user.name,
                 <>
                     <span className={`type ${delta < 0 ? 'bad' : 'good'}`}>

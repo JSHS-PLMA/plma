@@ -10,7 +10,7 @@
         justify-content: space-around;
         align-items: center;
         overflow: scroll;
-        padding-top: 20px;
+        padding-top: 40px;
     }
 
     .music {
@@ -21,6 +21,12 @@
             height: calc($music-size * (9 / 16) * 1.1);
             position: relative;
             top: 0;
+
+            .hide {
+                .shadow {
+                    opacity: 0;
+                }
+            }
         }
 
         .music_video {
@@ -46,8 +52,9 @@
                     top: 50%;
                     left: 50%;
                     transform: translate(-50%, -50%);
-                    background: rgba(#343a40, 0.1);
                     border: 0;
+
+                    border-radius: 5px;
                 }
             }
 
@@ -63,12 +70,10 @@
         .music_img_wrap {
             width: $music-size;
             aspect-ratio: 16/9;
-            background: #000;
             position: relative;
             display: flex;
             align-items: center;
             transition: opacity 0.3s;
-            overflow: hidden;
             justify-content: center;
             border-radius: 15px;
 
@@ -77,11 +82,27 @@
                 background: #343a40;
                 position: absolute;
                 border-radius: 15px;
+
+                &.shadow {
+                    height: 90%;
+                    margin-top: 10%;
+                    filter: blur(10px);
+                }
             }
 
             &.playing {
                 opacity: 0;
             }
+        }
+
+        .canvas_wrap {
+            width: $music-size;
+            aspect-ratio: 16/9;
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, 0);
         }
 
         .music_vote {
@@ -140,6 +161,10 @@
         }
 
         &.empty {
+            .music_img_wrap {
+                background: #d8d8d8;
+            }
+
             .music_info {
                 .music_title {
                     width: 200px;
@@ -150,6 +175,10 @@
                     width: 100px;
                     background: rgba(#343a40, 0.1);
                 }
+            }
+
+            .music_play {
+                pointer-events: none;
             }
         }
 
@@ -281,12 +310,74 @@
 
                 a {
                     padding-block: 5px;
+
+                    &.current {
+                        background: rgba(#343a40, 0.1);
+                    }
+
+                    &.target {
+                        background: #343a40;
+                        color: #fff;
+                    }
                 }
 
                 .month_select {
-                    padding-block: 10px;
+                    padding-block: 5px;
                     font-size: 1.1rem;
                     font-weight: bold;
+                    display: flex;
+                    flex-flow: row wrap;
+                    justify-content: center;
+                    align-items: center;
+
+                    .month_pass {
+                        width: 30px;
+                        height: 30px;
+                        position: relative;
+                        margin-inline: 10px;
+                        cursor: pointer;
+
+                        &::after,
+                        &::before {
+                            content: '';
+                            width: 10px;
+                            height: 2px;
+                            background: #343a40;
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                        }
+
+                        &::before {
+                            transform: translate(-50%, -50%) rotate(-45deg);
+                            margin-top: -3.5px;
+                        }
+
+                        &::after {
+                            transform: translate(-50%, -50%) rotate(45deg);
+                            margin-top: 3.5px;
+                        }
+
+                        &.month_next {
+                            &::before {
+                                transform: translate(-50%, -50%) rotate(45deg);
+                            }
+
+                            &::after {
+                                transform: translate(-50%, -50%) rotate(-45deg);
+                            }
+                        }
+
+                        &.disabled {
+                            pointer-events: none;
+
+                            &::after,
+                            &::before {
+                                background: #999;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -344,7 +435,7 @@
                         }
 
                         &.highlighted-row td {
-                            background: rgba(#343a40, 0.15);
+                            background: rgba(#343a40, 0.1);
                         }
                     }
                 }
@@ -435,7 +526,7 @@
         width: max-content;
         display: flex;
         white-space: nowrap;
-        animation: marquee 20s 4s ease-in-out infinite;
+        animation: marquee 20s 4s infinite;
 
         span {
             margin-right: 20px;

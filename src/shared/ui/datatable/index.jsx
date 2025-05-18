@@ -126,22 +126,18 @@ const DataTable = ({
     }
 
     useEffect(() => {
-        if (data?.length > 0) {
-            const focusPage =
-                typeof focus === 'number'
-                    ? Math.floor(focus / rowPerPage) + 1
-                    : 1;
+        const focusPage =
+            typeof focus === 'number' ? Math.floor(focus / rowPerPage) + 1 : 1;
 
-            draw(
-                data,
-                columns,
-                {
-                    column: order ? order[0] : 0,
-                    asc: order ? order[1] === 'asc' : true,
-                },
-                focusPage
-            );
-        }
+        draw(
+            data,
+            columns,
+            {
+                column: order ? order[0] : 0,
+                asc: order ? order[1] === 'asc' : true,
+            },
+            focusPage
+        );
 
         function resize() {
             colRefWidths.current = [];

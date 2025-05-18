@@ -1,5 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+
+import useAudio from '~shared/hooks/useAudio.js';
 
 import './index.scss';
 
@@ -13,92 +15,332 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const TITLE = import.meta.env.VITE_TITLE;
 
-function Songs_View() {
-    const navigate = useNavigate();
+const seekCooldown = 2000;
 
+const MarqueeText = ({ text, len = 20 }) => {
+    if (!text) return '';
+    const shouldScroll = text.length >= len;
+
+    return (
+        <div className="marquee-wrapper">
+            {shouldScroll ? (
+                <div className="marquee-content">
+                    <span aria-hidden="true">{text}&nbsp;&nbsp;&nbsp;</span>
+                    <span>{text}&nbsp;&nbsp;&nbsp;</span>
+                </div>
+            ) : (
+                <span className="normal-text">{text}</span>
+            )}
+        </div>
+    );
+};
+
+const CustomToggle = React.forwardRef(({ children, onClick, isOpen }, ref) => {
+    return (
+        <p
+            className="week"
+            onClick={(e) => {
+                e.preventDefault();
+                onClick(e);
+            }}
+        >
+            {children}{' '}
+            <span className="button">
+                {isOpen ? <>&#x25bc;</> : <>&#x25C0;</>}
+            </span>
+        </p>
+    );
+});
+
+function Songs_View() {
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
 
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-
     const playerRef = useRef(null);
-    const [player, setPlayer] = useState(null);
-    const [playerShadow, setPlayerShadow] = useState(null);
+    const playerShadowRef = useRef(null);
+    const canvasRef = useRef(null);
+    const musicRef = useRef(null);
+
+    const [playListMonth, setPlayListMonth] = useState(
+        moment().format('YYYY-MM')
+    );
+    const [playListWeeks, setPlayListWeeks] = useState([]);
+    const [playListWeek, setPlayListWeek] = useState();
+    const [playListWeekIdx, setPlayListWeekIdx] = useState();
 
     const [playList, setPlayList] = useState([]);
     const [currentMusic, setCurrentMusic] = useState();
     const [currentMusicIdx, setCurrentMusicIdx] = useState();
 
-    const [playing, setPlaying] = useState();
-    const [isOpen, setIsOpen] = useState(false);
+    const [isDropDownOpen, setIsDropDownOpen] = useState(false);
+
+    const audioPlayer = useAudio(handleIframe);
+    const seeking = useRef(false);
+    const lastSeekTime = useRef(0);
 
     useEffect(() => {
         init();
     }, []);
 
-    const handlePlay = () => {
-        if (player && playerShadow) {
-            if (!playing) {
-                player.playVideo();
-                playerShadow.playVideo();
-            } else {
-                player.pauseVideo();
-                playerShadow.pauseVideo();
-            }
-
-            setPlaying(!playing);
-        }
-    };
-
-    const onPlayerStateChange = (event) => {
-        if (event.data === YT.PlayerState.ENDED) {
-            setPlaying(false);
-        }
-    };
-
     async function init() {
+        if (!window.YT) {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+
+        window.onYouTubeIframeAPIReady = () => {
+            generateIframe(currentMusic);
+        };
+
+        musicRef.current = musicPlay(canvasRef.current);
+    }
+
+    const handlePlay = async (songId) => {
+        if (audioPlayer?.playing) {
+            audioPlayer.pause();
+        } else {
+            if (audioPlayer.fileUploaded) {
+                audioPlayer.resume();
+                handleIframeHard();
+            } else {
+                const playURL = await getData('/api/remote/songs/play', {
+                    songId,
+                });
+
+                const { fileUrl } = playURL;
+
+                const audio = await audioPlayer.play(fileUrl);
+
+                playerRef.current.playVideo();
+                playerShadowRef.current.playVideo();
+
+                musicRef.current.connect(audio);
+            }
+        }
+    };
+
+    async function handleIframe(time, audio) {
+        musicRef.current?.draw(audio);
+
+        if (!playerRef.current || seeking.current) return;
+
+        // Wait for both players to be ready
+        try {
+            await Promise.all([
+                waitUntilReady(playerRef.current),
+                waitUntilReady(playerShadowRef.current),
+            ]);
+        } catch (e) {
+            console.warn('Players not ready:', e);
+            return;
+        }
+
+        const current = playerRef.current.getCurrentTime();
+        const diff = Math.abs(current - time);
+        if (diff < 0.5) return;
+
+        const now = Date.now();
+        if (now - lastSeekTime.current < seekCooldown) return;
+
+        seeking.current = true;
+        lastSeekTime.current = now;
+
+        try {
+            await audioPlayer.pause();
+
+            playerRef.current.seekTo(time, true);
+            playerShadowRef.current.seekTo(time, true);
+
+            await Promise.all([
+                waitUntilPlayable(playerRef.current),
+                waitUntilPlayable(playerShadowRef.current),
+            ]);
+
+            await audioPlayer.resume();
+        } catch (err) {
+            console.error('Sync error:', err);
+        } finally {
+            seeking.current = false;
+        }
+    }
+
+    async function handleIframeHard() {
+        const time = audioPlayer.currentTime;
+
+        playerRef.current.seekTo(time, true);
+        playerShadowRef.current.seekTo(time, true);
+    }
+
+    function isPlayerReady(player) {
+        try {
+            return (
+                player &&
+                typeof player.seekTo === 'function' &&
+                typeof player.getPlayerState === 'function' &&
+                player.getPlayerState() !== -1 // -1: unstarted
+            );
+        } catch {
+            return false;
+        }
+    }
+
+    async function waitUntilReady(player, timeout = 5000) {
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
+
+            const check = () => {
+                if (isPlayerReady(player)) {
+                    resolve();
+                } else if (Date.now() - start > timeout) {
+                    reject(new Error('Player not ready within timeout'));
+                } else {
+                    setTimeout(check, 100);
+                }
+            };
+
+            check();
+        });
+    }
+
+    function waitUntilPlayable(player, timeout = 5000) {
+        return new Promise((resolve) => {
+            const start = Date.now();
+            let lastTime = player.getCurrentTime();
+
+            const check = () => {
+                const state = player.getPlayerState(); // 1: playing
+                const nowTime = player.getCurrentTime();
+                const progressed = nowTime > lastTime + 0.05;
+
+                if (state === window.YT.PlayerState.PLAYING && progressed) {
+                    resolve();
+                } else if (Date.now() - start > timeout) {
+                    console.warn('Timeout waiting for playable state');
+                    resolve(); // fallback
+                } else {
+                    lastTime = nowTime;
+                    setTimeout(check, 100);
+                }
+            };
+
+            check();
+        });
+    }
+
+    function generateIframe(currentMusic) {
+        if (!currentMusic) return;
+
+        if (playerRef.current) {
+            playerRef.current.destroy();
+        }
+        if (playerShadowRef.current) {
+            playerShadowRef.current.destroy();
+        }
+
+        playerRef.current = new window.YT.Player('youtube-player', {
+            host: 'https://www.youtube-nocookie.com',
+            height: '337.5',
+            width: '600',
+            videoId: currentMusic?.videoId,
+            playerVars: {
+                controls: 0, // UI 버튼 숨기기 (← 이게 핵심!)
+                rel: 0,
+                modestbranding: 1,
+                disablekb: 1,
+                fs: 0, // 전체화면 버튼 제거
+                iv_load_policy: 3, // 주석 비활성화
+                showinfo: 0, // 정보 숨기기 (구버전 브라우저용)
+                autoplay: 1, // 자동 재생
+                playsinline: 1, // 모바일에서 전체화면 안 되게
+            },
+            events: {
+                onReady: (event) => {
+                    event.target.setVolume(0);
+                    event.target.playVideo();
+                    event.target.pauseVideo();
+                },
+                onStateChange: (event) => {
+                    if (event.data === window.YT.PlayerState.ENDED) {
+                        event.target.seekTo(0); // 처음으로 이동
+                        event.target.playVideo(); // 재생
+                    }
+                },
+            },
+        });
+
+        playerShadowRef.current = new window.YT.Player(
+            'youtube-player-shadow',
+            {
+                host: 'https://www.youtube-nocookie.com',
+                height: 600 * 0.9 * (9 / 16),
+                width: 600 * 0.9,
+                videoId: currentMusic?.videoId,
+                playerVars: {
+                    controls: 0, // UI 버튼 숨기기 (← 이게 핵심!)
+                    rel: 0,
+                    modestbranding: 1,
+                    disablekb: 1,
+                    fs: 0, // 전체화면 버튼 제거
+                    iv_load_policy: 3, // 주석 비활성화
+                    showinfo: 0, // 정보 숨기기 (구버전 브라우저용)
+                    autoplay: 1, // 자동 재생
+                    playsinline: 1, // 모바일에서 전체화면 안 되게
+                },
+                events: {
+                    onReady: (event) => {
+                        event.target.setVolume(0); // 또는 event.target.mute();
+                        event.target.playVideo();
+                        event.target.pauseVideo();
+                    },
+                    onStateChange: (event) => {
+                        if (event.data === window.YT.PlayerState.ENDED) {
+                            event.target.seekTo(0); // 처음으로 이동
+                            event.target.playVideo(); // 재생
+                        }
+                    },
+                },
+            }
+        );
+    }
+
+    useEffect(() => {
+        if (currentMusic?.videoId) {
+            audioPlayer.stop();
+
+            if (window.YT && window.YT.Player) {
+                generateIframe(currentMusic);
+            } else {
+                init();
+            }
+        } else if (!currentMusic) {
+            audioPlayer.stop();
+        }
+    }, [currentMusic?.videoId]);
+
+    async function getPlayList(targetWeek) {
         const data = await getData('/api/remote/songs', {
-            week: '2025-05-07',
+            ...targetWeek,
         });
 
         setPlayList(data);
 
         if (data.length > 0) setCurrentMusicIdx(0);
+    }
 
-        // const tag = document.createElement('script');
-        // tag.src = 'https://www.youtube.com/iframe_api';
-        // document.body.appendChild(tag);
+    async function getPlayListWeek(targetMonth) {
+        const weeks = await getData('/api/remote/songs/weeks', {
+            month: targetMonth,
+        });
 
-        // // Called by YouTube API when ready
-        // window.onYouTubeIframeAPIReady = () => {
-        //     const ytPlayer = new window.YT.Player('ytplayer', {
-        //         events: {
-        //             onReady: (e) => {
-        //                 setPlayer(ytPlayer);
-        //             },
-        //             onStateChange: (e) => onPlayerStateChange,
-        //         },
-        //     });
-
-        //     const ytPlayerShadow = new window.YT.Player('ytplayer_shadow', {
-        //         events: {
-        //             onReady: (e) => {
-        //                 e.target.setVolume(0);
-        //                 setPlayerShadow(ytPlayerShadow);
-        //             },
-        //             onStateChange: (e) => onPlayerStateChange,
-        //         },
-        //     });
-        // };
-
-        let curr = new Date();
-        let first = curr - (curr.getDay() - 1) * 24 * 60 * 60 * 1000;
-        let end = first + 6 * 24 * 60 * 60 * 1000;
-        let firstDay = new Date(first);
-        let lastDay = new Date(end);
-        setStartDate(firstDay);
-        setEndDate(lastDay);
+        setPlayListWeeks(weeks);
+        let targetWeekIdx;
+        weeks.map((x, idx) => {
+            if (x.target) targetWeekIdx = idx;
+        });
+        targetWeekIdx ||= 0;
+        setPlayListWeekIdx(targetWeekIdx);
     }
 
     function updateTableData(data) {
@@ -116,7 +358,7 @@ function Songs_View() {
                 <span
                     className={`song_icon ${x.userVoted ? 'selected' : ''}`}
                     onClick={() => {
-                        songVote(x, x.id);
+                        songVote(x, idx);
                     }}
                 ></span>,
             ])
@@ -129,44 +371,6 @@ function Songs_View() {
         ]);
     }
 
-    const CustomToggle = React.forwardRef(
-        ({ children, onClick, isOpen }, ref) => (
-            <p
-                className="week"
-                onClick={(e) => {
-                    e.preventDefault();
-                    onClick(e);
-                }}
-            >
-                {children}{' '}
-                <span className="button">
-                    {isOpen ? <>&#x25bc;</> : <>&#x25C0;</>}
-                </span>
-            </p>
-        )
-    );
-
-    const CustomMenu = React.forwardRef(
-        ({ children, style, className, 'aria-labelledby': labeledBy }, ref) => {
-            const [value, setValue] = useState('');
-
-            return (
-                <div
-                    ref={ref}
-                    style={style}
-                    className={className}
-                    aria-labelledby={labeledBy}
-                >
-                    {React.Children.toArray(children).filter(
-                        (child) =>
-                            !value ||
-                            child.props.children.toLowerCase().startsWith(value)
-                    )}
-                </div>
-            );
-        }
-    );
-
     function cutText(text, len = 20) {
         return text
             ? text.length > len
@@ -174,24 +378,6 @@ function Songs_View() {
                 : text
             : '';
     }
-
-    const MarqueeText = ({ text, len = 20 }) => {
-        if (!text) return '';
-        const shouldScroll = text.length >= len;
-
-        return (
-            <div className="marquee-wrapper">
-                {shouldScroll ? (
-                    <div className="marquee-content">
-                        <span aria-hidden="true">{text}&nbsp;&nbsp;&nbsp;</span>
-                        <span>{text}&nbsp;&nbsp;&nbsp;</span>
-                    </div>
-                ) : (
-                    <span className="normal-text">{text}</span>
-                )}
-            </div>
-        );
-    };
 
     function extractYouTubeVideoId(url) {
         const regex =
@@ -204,7 +390,7 @@ function Songs_View() {
     function formatSeconds(seconds) {
         const hrs = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
+        const secs = Math.floor(seconds % 60);
 
         if (hrs > 0) {
             return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -219,18 +405,42 @@ function Songs_View() {
         setCurrentMusicIdx(idxData);
     }
 
+    async function handleMonth(dir) {
+        setPlayListMonth((prev) =>
+            moment(prev, 'YYYY-MM').add(dir, 'months').format('YYYY-MM')
+        );
+    }
+
+    useEffect(() => {
+        getPlayListWeek(playListMonth);
+    }, [playListMonth]);
+
     useEffect(() => {
         if (!playList || currentMusicIdx == null) return;
 
         const songData = playList[currentMusicIdx];
 
-        setCurrentMusic({
-            ...songData,
-            videoId: extractYouTubeVideoId(songData.ytlink),
-        });
+        const videoId = songData?.ytlink
+            ? extractYouTubeVideoId(songData?.ytlink)
+            : '';
+
+        if (songData)
+            setCurrentMusic({
+                ...songData,
+                videoId,
+            });
+        else setCurrentMusic(null);
 
         updateTableData(playList);
     }, [playList, currentMusicIdx]);
+
+    useEffect(() => {
+        setPlayListWeek(playListWeeks[playListWeekIdx]);
+    }, [playListWeekIdx, playListWeeks]);
+
+    useEffect(() => {
+        getPlayList(playListWeek);
+    }, [playListWeek]);
 
     async function songVote(musicData, musicDataIdx) {
         if (!musicData) return;
@@ -255,57 +465,51 @@ function Songs_View() {
                         <Card.Title>기상송 조회</Card.Title>
                     </Card.Header>
                     <Card.Body>
-                        <div className={`music ${currentMusic ? 0 : 'empty'}`}>
+                        <div className={`music ${currentMusic ? '' : 'empty'}`}>
                             <div className="music_video_wrap">
-                                <div className="music_video shadow">
-                                    <div className="iframe-container iframe_shadow">
-                                        <iframe
-                                            id="ytplayer_shadow"
-                                            src={
-                                                currentMusic
-                                                    ? `https://www.youtube-nocookie.com/embed/${currentMusic.videoId}?enablejsapi=1&loop=1&controls=0&playsinline=1&rel=0`
-                                                    : ''
-                                            }
-                                            title="YouTube video player"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                            className="music_iframe"
-                                            ref={playerRef}
-                                        ></iframe>
+                                <div
+                                    className={
+                                        audioPlayer.playing ? '' : 'hide'
+                                    }
+                                >
+                                    <div className="music_video shadow">
+                                        <div className="iframe-container iframe_shadow">
+                                            <div id="youtube-player-shadow"></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="music_video">
+                                        <div className="iframe-container">
+                                            <div id="youtube-player"></div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="music_video">
-                                    <div className="iframe-container">
-                                        <iframe
-                                            id="ytplayer"
-                                            src={
-                                                currentMusic
-                                                    ? `https://www.youtube-nocookie.com/embed/${currentMusic.videoId}?enablejsapi=1&loop=1&controls=0&playsinline=1&rel=0`
-                                                    : ''
-                                            }
-                                            title="YouTube video player"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                            className="music_iframe"
-                                            ref={playerRef}
-                                        ></iframe>
-                                    </div>
+                                <div
+                                    className={`music_img_wrap ${audioPlayer?.playing ? 'playing' : ''}`}
+                                >
+                                    {currentMusic ? (
+                                        <>
+                                            <img
+                                                className="music_img shadow"
+                                                src={currentMusic?.imgMode}
+                                                alt="music"
+                                            />
+
+                                            <img
+                                                className="music_img"
+                                                src={currentMusic?.imgMode}
+                                                alt="music"
+                                            />
+                                        </>
+                                    ) : (
+                                        ''
+                                    )}
                                 </div>
 
-                                {currentMusic ? (
-                                    <div
-                                        className={`music_img_wrap ${playing ? 'playing' : ''}`}
-                                    >
-                                        <img
-                                            className="music_img"
-                                            src={currentMusic?.imgMode}
-                                            alt="music"
-                                        />
-                                    </div>
-                                ) : (
-                                    ''
-                                )}
+                                <div className="canvas_wrap">
+                                    <canvas ref={canvasRef}></canvas>
+                                </div>
                             </div>
 
                             <div className="music_vote">
@@ -324,7 +528,7 @@ function Songs_View() {
                                 <div className="music_title music_infoBox">
                                     <MarqueeText
                                         text={currentMusic?.title}
-                                        len={45}
+                                        len={40}
                                     />
                                 </div>
                                 <div className="music_artist music_infoBox">
@@ -335,10 +539,16 @@ function Songs_View() {
                             <div className="music_play">
                                 <div className="play_slider">
                                     <div className="current_time music_time">
-                                        <span>3:14</span>
+                                        <span>
+                                            {formatSeconds(
+                                                audioPlayer?.currentTime || 0
+                                            )}
+                                        </span>
                                     </div>
 
                                     <input
+                                        id="music-progress"
+                                        name="musicProgress"
                                         type="range"
                                         min="0"
                                         max={(currentMusic?.duration || 0) * 10}
@@ -365,9 +575,16 @@ function Songs_View() {
                                         </span>
                                     </div>
 
-                                    <div className="playpause_button music_button">
+                                    <div
+                                        className="playpause_button music_button"
+                                        onClick={() => {
+                                            handlePlay(currentMusic.id);
+                                        }}
+                                    >
                                         <span>
-                                            <FontAwesomeIcon icon="fa-solid fa-play" />
+                                            <FontAwesomeIcon
+                                                icon={`fa-solid ${audioPlayer?.playing ? 'fa-pause' : 'fa-play'}`}
+                                            />
                                         </span>
                                     </div>
 
@@ -389,39 +606,69 @@ function Songs_View() {
                             <div className="week_selector">
                                 <Dropdown
                                     className="d-inline mx-2"
-                                    show={isOpen}
-                                    onToggle={(isOpen) => setIsOpen(isOpen)}
+                                    onToggle={(isOpen) =>
+                                        setIsDropDownOpen(isOpen)
+                                    }
                                 >
                                     <Dropdown.Toggle
                                         as={CustomToggle}
-                                        isOpen={isOpen}
+                                        isOpen={isDropDownOpen}
                                     >
-                                        15주차{' '}
-                                        <span>(2025.04.31. ~ 2025.05.02)</span>
+                                        {playListWeek?.weekNumber}주차{' '}
+                                        <span>
+                                            (
+                                            {moment(
+                                                playListWeek?.weekStart
+                                            ).format('YYYY.MM.DD.')}{' '}
+                                            ~{' '}
+                                            {moment(
+                                                playListWeek?.weekEnd
+                                            ).format('YYYY.MM.DD.')}
+                                            )
+                                        </span>
                                     </Dropdown.Toggle>
 
-                                    <Dropdown.Menu
-                                        as={CustomMenu}
-                                        className="dropdown_menu"
-                                    >
+                                    <Dropdown.Menu className="dropdown_menu">
                                         <Dropdown.ItemText className="month_select">
-                                            2025년 5월
+                                            <span
+                                                className="month_prev month_pass"
+                                                onClick={() => {
+                                                    handleMonth(-1);
+                                                }}
+                                            ></span>
+                                            <span>
+                                                {moment(
+                                                    playListMonth,
+                                                    'YYYY-MM'
+                                                ).format('YYYY년 MM월')}
+                                            </span>
+                                            <span
+                                                className={`month_next month_pass ${!moment(playListMonth, 'YYYY-MM').isBefore(moment(), 'month') ? 'disabled' : ''}`}
+                                                onClick={() => {
+                                                    handleMonth(1);
+                                                }}
+                                            ></span>
                                         </Dropdown.ItemText>
-                                        <Dropdown.Item>
-                                            13주차 (2025.04.28. ~ 2025.05.04.)
-                                        </Dropdown.Item>
-                                        <Dropdown.Item>
-                                            14주차 (2025.05.05. ~ 2025.05.11.)
-                                        </Dropdown.Item>
-                                        <Dropdown.Item>
-                                            13주차 (2025.05.12. ~ 2025.05.18.)
-                                        </Dropdown.Item>
-                                        <Dropdown.Item>
-                                            13주차 (2025.05.12. ~ 2025.05.18.)
-                                        </Dropdown.Item>
-                                        <Dropdown.Item>
-                                            13주차 (2025.05.12. ~ 2025.05.18.)
-                                        </Dropdown.Item>
+
+                                        {playListWeeks?.map((x, idx) => (
+                                            <Dropdown.Item
+                                                key={idx}
+                                                onClick={() => {
+                                                    setPlayListWeekIdx(idx);
+                                                }}
+                                                className={`${x.current ? 'current' : ''} ${playListWeekIdx == idx ? 'target' : ''}`}
+                                            >
+                                                {x.weekNumber}주차 (
+                                                {moment(x.weekStart).format(
+                                                    'YYYY.MM.DD.'
+                                                )}{' '}
+                                                ~{' '}
+                                                {moment(x.weekEnd).format(
+                                                    'YYYY.MM.DD.'
+                                                )}
+                                                )
+                                            </Dropdown.Item>
+                                        ))}
                                     </Dropdown.Menu>
                                 </Dropdown>
                             </div>

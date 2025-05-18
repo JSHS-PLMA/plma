@@ -240,20 +240,18 @@ function Songs_View() {
         }
 
         playerRef.current = new window.YT.Player('youtube-player', {
-            host: 'https://www.youtube-nocookie.com',
             height: '337.5',
             width: '600',
             videoId: currentMusic?.videoId,
             playerVars: {
-                controls: 0, // UI 버튼 숨기기 (← 이게 핵심!)
+                controls: 0,
                 rel: 0,
                 modestbranding: 1,
                 disablekb: 1,
-                fs: 0, // 전체화면 버튼 제거
-                iv_load_policy: 3, // 주석 비활성화
-                showinfo: 0, // 정보 숨기기 (구버전 브라우저용)
-                autoplay: 1, // 자동 재생
-                playsinline: 1, // 모바일에서 전체화면 안 되게
+                fs: 0,
+                iv_load_policy: 3,
+                showinfo: 0,
+                playsinline: 1,
             },
             events: {
                 onReady: (event) => {
@@ -273,20 +271,18 @@ function Songs_View() {
         playerShadowRef.current = new window.YT.Player(
             'youtube-player-shadow',
             {
-                host: 'https://www.youtube-nocookie.com',
                 height: 600 * 0.9 * (9 / 16),
                 width: 600 * 0.9,
                 videoId: currentMusic?.videoId,
                 playerVars: {
-                    controls: 0, // UI 버튼 숨기기 (← 이게 핵심!)
+                    controls: 0,
                     rel: 0,
                     modestbranding: 1,
                     disablekb: 1,
-                    fs: 0, // 전체화면 버튼 제거
-                    iv_load_policy: 3, // 주석 비활성화
-                    showinfo: 0, // 정보 숨기기 (구버전 브라우저용)
-                    autoplay: 1, // 자동 재생
-                    playsinline: 1, // 모바일에서 전체화면 안 되게
+                    fs: 0,
+                    iv_load_policy: 3,
+                    showinfo: 0,
+                    playsinline: 1,
                 },
                 events: {
                     onReady: (event) => {

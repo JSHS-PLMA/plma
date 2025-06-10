@@ -12,6 +12,7 @@ import { getData, postData } from '~shared/scripts/requestData.js';
 import moment from 'moment';
 import { musicPlay } from '~shared/scripts/musicplay.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Slider } from '~shared/ui/slider';
 
 const TITLE = import.meta.env.VITE_TITLE;
 
@@ -25,8 +26,8 @@ const MarqueeText = ({ text, len = 20 }) => {
         <div className="marquee-wrapper">
             {shouldScroll ? (
                 <div className="marquee-content">
-                    <span aria-hidden="true">{text}&nbsp;&nbsp;&nbsp;</span>
-                    <span>{text}&nbsp;&nbsp;&nbsp;</span>
+                    <span aria-hidden="true">{text}</span>
+                    <span>{text}</span>
                 </div>
             ) : (
                 <span className="normal-text">{text}</span>
@@ -71,8 +72,11 @@ function Songs_View() {
     const [playList, setPlayList] = useState([]);
     const [currentMusic, setCurrentMusic] = useState();
     const [currentMusicIdx, setCurrentMusicIdx] = useState();
+    const [currentMusicTime, setCurrentMusicTime] = useState(0);
 
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
+
+    const playBarRef = useRef();
 
     const audioPlayer = useAudio(handleIframe);
     const seeking = useRef(false);
@@ -103,30 +107,47 @@ function Songs_View() {
         } else {
             if (audioPlayer.fileUploaded) {
                 audioPlayer.resume();
-                handleIframeHard();
+                await handleIframeHard();
             } else {
-                const playURL = await getData('/api/remote/songs/play', {
-                    songId,
-                });
+                // 🎯 플레이어가 없는 경우엔 iframe부터 생성
+                if (!playerRef.current || !playerShadowRef.current) {
+                    await window.YTAPIReady;
+                    generateIframe(currentMusic); // ⚠️ currentMusic이 null일 수 있으니 주의!
+                }
 
-                const { fileUrl } = playURL;
+                try {
+                    await waitUntilReady(playerRef.current);
+                    await waitUntilReady(playerShadowRef.current);
+                } catch (e) {
+                    console.warn('Players not ready:', e);
+                    return;
+                }
 
-                const audio = await audioPlayer.play(fileUrl);
+                try {
+                    const playURL = await getData('/api/remote/songs/play', {
+                        songId,
+                    });
+                    const { fileUrl } = playURL;
 
-                playerRef.current.playVideo();
-                playerShadowRef.current.playVideo();
-
-                musicRef.current.connect(audio);
+                    const audio = await audioPlayer.play(fileUrl);
+                    await playerRef.current.playVideo();
+                    await playerShadowRef.current.playVideo();
+                    await musicRef.current.connect(audio);
+                } catch (err) {
+                    console.error('Error playing music:', err);
+                    alert('음악 재생 중 오류가 발생했습니다.');
+                }
             }
         }
     };
 
     async function handleIframe(time, audio) {
         musicRef.current?.draw(audio);
+        setCurrentMusicTime(time);
+        playBarRef.current.value = time * 10;
 
         if (!playerRef.current || seeking.current) return;
 
-        // Wait for both players to be ready
         try {
             await Promise.all([
                 waitUntilReady(playerRef.current),
@@ -138,8 +159,8 @@ function Songs_View() {
         }
 
         const current = playerRef.current.getCurrentTime();
-        const diff = Math.abs(current - time);
-        if (diff < 0.5) return;
+        const diff = current - time;
+        if (Math.abs(diff) < 0.2) return;
 
         const now = Date.now();
         if (now - lastSeekTime.current < seekCooldown) return;
@@ -148,17 +169,13 @@ function Songs_View() {
         lastSeekTime.current = now;
 
         try {
-            await audioPlayer.pause();
-
-            playerRef.current.seekTo(time, true);
-            playerShadowRef.current.seekTo(time, true);
+            await playerRef.current.seekTo(time, true);
+            await playerShadowRef.current.seekTo(time, true);
 
             await Promise.all([
                 waitUntilPlayable(playerRef.current),
                 waitUntilPlayable(playerShadowRef.current),
             ]);
-
-            await audioPlayer.resume();
         } catch (err) {
             console.error('Sync error:', err);
         } finally {
@@ -178,8 +195,7 @@ function Songs_View() {
             return (
                 player &&
                 typeof player.seekTo === 'function' &&
-                typeof player.getPlayerState === 'function' &&
-                player.getPlayerState() !== -1 // -1: unstarted
+                typeof player.getPlayerState === 'function'
             );
         } catch {
             return false;
@@ -240,18 +256,20 @@ function Songs_View() {
         }
 
         playerRef.current = new window.YT.Player('youtube-player', {
+            host: 'https://www.youtube-nocookie.com',
             height: '337.5',
             width: '600',
             videoId: currentMusic?.videoId,
             playerVars: {
-                controls: 0,
+                controls: 0, // UI 버튼 숨기기 (← 이게 핵심!)
                 rel: 0,
                 modestbranding: 1,
                 disablekb: 1,
-                fs: 0,
-                iv_load_policy: 3,
-                showinfo: 0,
-                playsinline: 1,
+                fs: 0, // 전체화면 버튼 제거
+                iv_load_policy: 3, // 주석 비활성화
+                showinfo: 0, // 정보 숨기기 (구버전 브라우저용)
+                autoplay: 1, // 자동 재생
+                playsinline: 1, // 모바일에서 전체화면 안 되게
             },
             events: {
                 onReady: (event) => {
@@ -271,18 +289,20 @@ function Songs_View() {
         playerShadowRef.current = new window.YT.Player(
             'youtube-player-shadow',
             {
+                host: 'https://www.youtube-nocookie.com',
                 height: 600 * 0.9 * (9 / 16),
                 width: 600 * 0.9,
                 videoId: currentMusic?.videoId,
                 playerVars: {
-                    controls: 0,
+                    controls: 0, // UI 버튼 숨기기 (← 이게 핵심!)
                     rel: 0,
                     modestbranding: 1,
                     disablekb: 1,
-                    fs: 0,
-                    iv_load_policy: 3,
-                    showinfo: 0,
-                    playsinline: 1,
+                    fs: 0, // 전체화면 버튼 제거
+                    iv_load_policy: 3, // 주석 비활성화
+                    showinfo: 0, // 정보 숨기기 (구버전 브라우저용)
+                    autoplay: 1, // 자동 재생
+                    playsinline: 1, // 모바일에서 전체화면 안 되게
                 },
                 events: {
                     onReady: (event) => {
@@ -307,8 +327,6 @@ function Songs_View() {
 
             if (window.YT && window.YT.Player) {
                 generateIframe(currentMusic);
-            } else {
-                init();
             }
         } else if (!currentMusic) {
             audioPlayer.stop();
@@ -323,20 +341,6 @@ function Songs_View() {
         setPlayList(data);
 
         if (data.length > 0) setCurrentMusicIdx(0);
-    }
-
-    async function getPlayListWeek(targetMonth) {
-        const weeks = await getData('/api/remote/songs/weeks', {
-            month: targetMonth,
-        });
-
-        setPlayListWeeks(weeks);
-        let targetWeekIdx;
-        weeks.map((x, idx) => {
-            if (x.target) targetWeekIdx = idx;
-        });
-        targetWeekIdx ||= 0;
-        setPlayListWeekIdx(targetWeekIdx);
     }
 
     function updateTableData(data) {
@@ -408,10 +412,6 @@ function Songs_View() {
     }
 
     useEffect(() => {
-        getPlayListWeek(playListMonth);
-    }, [playListMonth]);
-
-    useEffect(() => {
         if (!playList || currentMusicIdx == null) return;
 
         const songData = playList[currentMusicIdx];
@@ -429,6 +429,24 @@ function Songs_View() {
 
         updateTableData(playList);
     }, [playList, currentMusicIdx]);
+
+    async function getPlayListWeek(targetMonth) {
+        const weeks = await getData('/api/remote/songs/weeks', {
+            month: targetMonth,
+        });
+
+        setPlayListWeeks(weeks);
+        let targetWeekIdx;
+        weeks.map((x, idx) => {
+            if (x.current) targetWeekIdx = idx;
+        });
+        targetWeekIdx ||= 0;
+        setPlayListWeekIdx(targetWeekIdx);
+    }
+
+    useEffect(() => {
+        getPlayListWeek(playListMonth);
+    }, [playListMonth]);
 
     useEffect(() => {
         setPlayListWeek(playListWeeks[playListWeekIdx]);
@@ -508,7 +526,12 @@ function Songs_View() {
                                 </div>
                             </div>
 
-                            <div className="music_vote">
+                            <div className="music_button">
+                                <button className={`edit_button`}>
+                                    <FontAwesomeIcon icon="fa-solid fa-pen-to-square" />{' '}
+                                    <span></span>
+                                </button>
+
                                 <button
                                     className={`vote_button ${currentMusic?.userVoted ? 'voted' : ''}`}
                                     onClick={() => {
@@ -537,18 +560,19 @@ function Songs_View() {
                                     <div className="current_time music_time">
                                         <span>
                                             {formatSeconds(
-                                                audioPlayer?.currentTime || 0
+                                                currentMusicTime || 0
                                             )}
                                         </span>
                                     </div>
 
-                                    <input
-                                        id="music-progress"
-                                        name="musicProgress"
-                                        type="range"
-                                        min="0"
-                                        max={(currentMusic?.duration || 0) * 10}
-                                    />
+                                    <div className="progress_bar">
+                                        <Slider
+                                            min={0}
+                                            max={currentMusic?.duration}
+                                            defaultValue={0}
+                                            setValue={currentMusicTime}
+                                        />
+                                    </div>
 
                                     <div className="end_time music_time">
                                         <span>

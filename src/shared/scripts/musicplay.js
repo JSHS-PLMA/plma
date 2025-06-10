@@ -14,26 +14,35 @@ export function musicPlay(_canvas) {
 
     const { width, height } = canvas;
 
-    const rectWidth = 5;
+    const rectWidth = 8;
     const gap = 0;
     const stepX = rectWidth + gap;
 
     const barCount = Math.floor(width / rectWidth);
+
+    const buffer = Math.max(Math.floor(dataArray.length / barCount), 1);
 
     function draw() {
         analyser.getByteFrequencyData(dataArray);
 
         ctx.clearRect(0, 0, width, height);
 
-        const prefix = 0;
+        const centerX = Math.floor(width / 2);
 
         for (let i = 0; i < barCount; i++) {
-            const val = dataArray[i + prefix];
-            const barHeight = (val / 255) ** 3 * 100;
-            const x = i % 2 == 0 ? i * stepX : width - i * stepX;
+            let val = 0;
+            for (let j = 0; j < buffer; j++) {
+                val += dataArray[i * buffer + j];
+            }
+            val /= buffer;
+            const barHeight = (val / 255) ** 3 * 50;
 
-            ctx.fillStyle = `rgba(255, 255, 255, ${val / 255})`;
-            ctx.fillRect(x, 0, rectWidth, barHeight);
+            const offset = Math.floor(i / 2) * stepX;
+            const x =
+                i % 2 === 0 ? centerX + offset : centerX - offset - rectWidth;
+
+            ctx.fillStyle = `rgba(255, 255, 255, ${(val / 255) * 0.8})`;
+            ctx.fillRect(x, height - barHeight, rectWidth, barHeight);
         }
     }
 
@@ -49,17 +58,6 @@ export function musicPlay(_canvas) {
 
     function reset() {
         ctx.clearRect(0, 0, width, height);
-
-        const prefix = 0;
-
-        for (let i = 0; i < barCount; i++) {
-            const val = dataArray[i + prefix];
-            const barHeight = (val / 255) ** 3 * 100;
-            const x = i % 2 == 0 ? i * stepX : width - i * stepX;
-
-            ctx.fillStyle = `rgba(255, 255, 255, ${val / 255})`;
-            ctx.fillRect(x, 0, rectWidth, barHeight);
-        }
     }
 
     return { draw, connect, reset };

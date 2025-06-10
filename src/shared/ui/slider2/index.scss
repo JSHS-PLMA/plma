@@ -1,0 +1,108 @@
+@use '~shared/styles/variables.scss' as *;
+
+.multi-slider_wrapper {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    outline: none;
+    align-items: center;
+
+    $inputHeight: 5px;
+
+    --cutStartPercent: 0;
+    --cutEndPercent: 1;
+
+    --rangePercent: 0;
+
+    input[type='range'] {
+        width: 100%;
+        height: 5px;
+        position: absolute;
+        border-radius: 5px;
+        appearance: none;
+        outline: none;
+        opacity: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+
+        &::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 30px;
+            position: relative;
+            top: 0;
+            border-radius: 0;
+            pointer-events: all;
+            cursor: ew-resize;
+        }
+    }
+
+    .slider {
+        width: 100%;
+        height: 10px;
+        position: absolute;
+        display: flex;
+        align-items: center;
+
+        .track {
+            width: 100%;
+            height: $inputHeight;
+            background-image:
+                linear-gradient(
+                    rgba($textColorDark, 0.2),
+                    rgba($textColorDark, 0.2)
+                ),
+                linear-gradient($jshsusColorDark, $jshsusColorDark),
+                linear-gradient($jshsusColorDark, $jshsusColorDark),
+                linear-gradient(
+                    rgba($textColorDark, 0.2),
+                    rgba($textColorDark, 0.2)
+                );
+            background-repeat: no-repeat;
+            background-position:
+                left center,
+                calc(
+                        100% * (var(--cutStartPercent)) /
+                            (1 - (var(--rangePercent) - var(--cutStartPercent)))
+                    )
+                    center,
+                calc(
+                        100% * (var(--rangePercent)) /
+                            (1 - (var(--cutEndPercent) - var(--rangePercent)))
+                    )
+                    center,
+                right center;
+            background-size:
+                calc(var(--cutStartPercent) * 100%) 2px,
+                calc((var(--rangePercent) - var(--cutStartPercent)) * 100%) 5px,
+                calc((var(--cutEndPercent) - var(--rangePercent)) * 100%) 2px,
+                calc(100% - 100% * var(--cutEndPercent)) 2px;
+            border-radius: 5px;
+        }
+
+        .thumb {
+            width: 5px;
+            height: 30px;
+            background: #eb3489;
+            position: absolute;
+            transform: translate(-50%, 0);
+            border-radius: 15px;
+
+            &.left {
+                left: calc(100% * var(--cutStartPercent));
+            }
+
+            &.right {
+                left: calc(100% * var(--cutEndPercent));
+            }
+
+            &.playThumb {
+                width: 15px;
+                height: 15px;
+                left: calc(100% * var(--rangePercent));
+                background: $jshsusColorDark;
+            }
+        }
+    }
+}

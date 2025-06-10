@@ -72,6 +72,7 @@ function Songs_Request() {
         e.preventDefault();
         const link = e.target[0].value;
         const res = await postData('/api/remote/songs/check', { link });
+        console.log(res);
 
         if (playerRef.current) {
             playerRef.current.destroy();

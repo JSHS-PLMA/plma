@@ -151,11 +151,7 @@ function MyDorm_Repair() {
         formData.append('image', uploadedImage); // 이미지 파일 추가
 
         try {
-            await postData('/api/dorms/reports', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            await postData('/api/dorms/reports', formData);
             await fetchReports();
             clearInput();
             MySwal.fire({

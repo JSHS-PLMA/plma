@@ -144,7 +144,7 @@ function Songs_View() {
     async function handleIframe(time, audio) {
         musicRef.current?.draw(audio);
         setCurrentMusicTime(time);
-        playBarRef.current.value = time * 10;
+        //playBarRef.current.value = time * 10;
 
         if (!playerRef.current || seeking.current) return;
 

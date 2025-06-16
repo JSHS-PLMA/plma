@@ -1,9 +1,5 @@
 @use '~shared/styles/variables.scss' as *;
 
-::-webkit-scrollbar {
-    width: 0;
-}
-
 .sidebar {
     $width: $sidebarWidth;
 

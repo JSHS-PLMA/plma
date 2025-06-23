@@ -7,30 +7,43 @@ export function Slider({
     defaultValue = 0,
     setValue = 0,
     className,
+    onInput,
+    onInputComplete,
+    mode,
 }) {
     const inputRef = useRef();
     const wrapperRef = useRef();
 
-    function onInput() {
+    const isDragging = useRef(false);
+
+    function valueInput() {
         const val = `${(inputRef.current.value / max) * 100}%`;
         wrapperRef.current.style.setProperty('--valuePercent', val);
     }
 
     useEffect(() => {
         inputRef.current.value = setValue;
-        onInput();
+        valueInput();
     }, [setValue]);
 
     return (
         <div className={`slider_wrapper ${className}`} ref={wrapperRef}>
             <input
                 type="range"
-                step="any"
-                onInput={onInput}
+                step={0.1}
+                onInput={valueInput}
                 min={min}
                 max={max}
                 ref={inputRef}
                 defaultValue={defaultValue}
+                onMouseDown={() => {
+                    isDragging.current = true;
+                    onInput();
+                }}
+                onMouseUp={() => {
+                    isDragging.current = false;
+                    onInputComplete(inputRef.current.value);
+                }}
             />
         </div>
     );

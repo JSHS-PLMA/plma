@@ -105,4 +105,50 @@
             }
         }
     }
+
+    .time-container {
+        width: 100%;
+        height: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: absolute;
+        top: 30px;
+        left: 0;
+
+        span {
+            font-size: 0.8rem;
+            color: $textColorDark;
+            user-select: none;
+            pointer-events: none;
+        }
+    }
+
+    &.disabled {
+        input {
+            pointer-events: none;
+
+            &::-webkit-slider-thumb {
+                cursor: not-allowed;
+            }
+        }
+
+        .slider {
+            .track {
+                background-image:
+                    linear-gradient(rgba(#bbbbbb, 0.1), rgba(#bbbbbb, 0.1)),
+                    linear-gradient(#bbbbbb, #bbbbbb),
+                    linear-gradient(#bbbbbb, #bbbbbb),
+                    linear-gradient(rgba(#bbbbbb, 0.1), rgba(#bbbbbb, 0.1));
+            }
+
+            .thumb {
+                background: #d8d8d8;
+
+                &.playThumb {
+                    background: #b3b3b3;
+                }
+            }
+        }
+    }
 }

@@ -1,13 +1,26 @@
 import './index.scss';
 import { useEffect, useRef, useState } from 'react';
 
+function formatSeconds(seconds) {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    if (hrs > 0) {
+        return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    } else {
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+}
+
 export function Slider2({
     min = 0,
-    max = 100,
+    max = 0,
     defaultValue = 0,
     setValue = 0,
     className,
     maxLength = 300,
+    disabled,
     onCutChange = () => {},
     onCutChangeComplete = () => {},
     onInput = () => {},
@@ -19,7 +32,10 @@ export function Slider2({
 
     const cutStartRef = useRef(min);
     const cutEndRef = useRef(max - min > maxLength ? maxLength : max);
-    const playerRef = useRef(min);
+
+    const valueRef = useRef(null);
+
+    const isDragging = useRef(false);
 
     const [cutStart, setCutStart] = useState(min);
     const [cutEnd, setCutEnd] = useState(
@@ -57,23 +73,29 @@ export function Slider2({
     function setPlayerValue(val) {
         const startVal = Number(cutStartRef.current);
         const endVal = Number(cutEndRef.current);
-
-        wrapperRef.current.style.setProperty('--rangePercent', val / max);
+        wrapperRef.current.style.setProperty('--rangePercent', val / max || 0);
     }
 
     function onPlayInput() {
         const val = Number(playerInpRef.current.value);
+        valueRef.current.textContent = formatSeconds(val);
         setPlayerValue(val);
         onInput(val);
     }
 
     function onPlayInputComplete() {
-        onInputComplete();
+        const val = Number(playerInpRef.current.value);
+        if (val < cutStartRef.current || val > cutEndRef.current) {
+            playerInpRef.current.value = cutStartRef.current;
+        }
     }
 
     useEffect(() => {
+        if (isDragging.current) return;
+
         playerInpRef.current.value = Number(setValue);
         setPlayerValue(Number(setValue));
+        valueRef.current.textContent = formatSeconds(setValue);
     }, [setValue]);
 
     useEffect(() => {
@@ -87,7 +109,7 @@ export function Slider2({
 
     return (
         <div
-            className={`multi-slider_wrapper ${className ?? ''}`}
+            className={`multi-slider_wrapper ${className ?? ''} ${disabled ? 'disabled' : ''}`}
             ref={wrapperRef}
         >
             <div className="slider">
@@ -131,21 +153,32 @@ export function Slider2({
             <input
                 type="range"
                 step={0.1}
-                onInput={onPlayInput}
                 min={min}
                 max={max}
+                onInput={onPlayInput}
                 ref={playerInpRef}
-                onMouseUp={(e) => {
-                    onPlayInputComplete();
-                }}
                 defaultValue={defaultValue}
                 className="playInput"
+                onMouseDown={() => {
+                    isDragging.current = true;
+                    onInput();
+                }}
+                onMouseUp={() => {
+                    onPlayInputComplete();
+                    onInputComplete(playerInpRef.current.value);
+                    isDragging.current = false;
+                }}
             />
 
             <datalist id="markers">
                 <option value={0}></option>
                 <option value={max}></option>
             </datalist>
+
+            <div className="time-container">
+                <span ref={valueRef}>{formatSeconds(0)}</span>
+                <span>{formatSeconds(max || 0)}</span>
+            </div>
         </div>
     );
 }

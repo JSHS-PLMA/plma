@@ -82,6 +82,8 @@ function Songs_View() {
     const seeking = useRef(false);
     const lastSeekTime = useRef(0);
 
+    const isDragging = useRef(false);
+
     useEffect(() => {
         init();
     }, []);
@@ -97,53 +99,47 @@ function Songs_View() {
         window.onYouTubeIframeAPIReady = () => {
             generateIframe(currentMusic);
         };
-
-        musicRef.current = musicPlay(canvasRef.current);
     }
 
     const handlePlay = async (songId) => {
-        if (audioPlayer?.playing) {
-            audioPlayer.pause();
+        if (playing) {
+            await playerRef.current.pauseVideo();
+            await playerShadowRef.current.pauseVideo();
+
+            cancelAnimationFrame(videoTickRef.current);
+            setPlaying(false);
         } else {
-            if (audioPlayer.fileUploaded) {
-                audioPlayer.resume();
-                await handleIframeHard();
-            } else {
-                // 🎯 플레이어가 없는 경우엔 iframe부터 생성
-                if (!playerRef.current || !playerShadowRef.current) {
-                    await window.YTAPIReady;
-                    generateIframe(currentMusic); // ⚠️ currentMusic이 null일 수 있으니 주의!
-                }
+            if (!playerRef.current || !playerShadowRef.current) {
+                await window.YTAPIReady;
+                generateIframe(currentMusic);
+            }
 
-                try {
-                    await waitUntilReady(playerRef.current);
-                    await waitUntilReady(playerShadowRef.current);
-                } catch (e) {
-                    console.warn('Players not ready:', e);
-                    return;
-                }
+            try {
+                await waitUntilReady(playerRef.current);
+                await waitUntilReady(playerShadowRef.current);
+            } catch (e) {
+                console.warn('Players not ready:', e);
+                return;
+            }
 
-                try {
-                    const playURL = await getData('/api/remote/songs/play', {
-                        songId,
-                    });
-                    const { fileUrl } = playURL;
+            try {
+                await playerShadowRef.current.playVideo();
+                await playerRef.current.playVideo();
+                videoTickRef.current = requestAnimationFrame(videoTick);
 
-                    const audio = await audioPlayer.play(fileUrl);
-                    await playerRef.current.playVideo();
-                    await playerShadowRef.current.playVideo();
-                    await musicRef.current.connect(audio);
-                } catch (err) {
-                    console.error('Error playing music:', err);
-                    alert('음악 재생 중 오류가 발생했습니다.');
-                }
+                setPlaying(true);
+            } catch (err) {
+                console.error('Error playing music:', err);
+                alert('음악 재생 중 오류가 발생했습니다.');
             }
         }
     };
 
     async function handleIframe(time, audio) {
         musicRef.current?.draw(audio);
-        setCurrentMusicTime(time);
+        if (!isDragging.current) {
+            setCurrentMusicTime(time);
+        }
         //playBarRef.current.value = time * 10;
 
         if (!playerRef.current || seeking.current) return;
@@ -331,7 +327,20 @@ function Songs_View() {
         } else if (!currentMusic) {
             audioPlayer.stop();
         }
+        setCurrentMusicTime(0);
     }, [currentMusic?.videoId]);
+
+    async function onInput() {
+        isDragging.current = true;
+    }
+
+    async function onInputComplete(time) {
+        audioPlayer.seek(time);
+        handleIframeHard(time);
+        setCurrentMusicTime(time);
+
+        isDragging.current = false;
+    }
 
     async function getPlayList(targetWeek) {
         const data = await getData('/api/remote/songs', {
@@ -438,7 +447,7 @@ function Songs_View() {
         setPlayListWeeks(weeks);
         let targetWeekIdx;
         weeks.map((x, idx) => {
-            if (x.current) targetWeekIdx = idx;
+            if (x.target) targetWeekIdx = idx;
         });
         targetWeekIdx ||= 0;
         setPlayListWeekIdx(targetWeekIdx);
@@ -571,6 +580,8 @@ function Songs_View() {
                                             max={currentMusic?.duration}
                                             defaultValue={0}
                                             setValue={currentMusicTime}
+                                            onInput={onInput}
+                                            onInputComplete={onInputComplete}
                                         />
                                     </div>
 

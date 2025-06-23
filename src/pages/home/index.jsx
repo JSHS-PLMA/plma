@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
+import VideoPlayer from '~shared/ui/videoPlayer';
+
 import './index.scss';
 
 function Home() {

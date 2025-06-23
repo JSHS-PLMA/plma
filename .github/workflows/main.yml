@@ -10,20 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install dependencies and build
-        run: |
-          npm install
-          npm run build
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'  # 프로젝트에 맞게 조절
 
-      - name: Setup SSH
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build React app
+        run: npm run build  # 빌드 명령어가 dist 폴더 생성하는지 확인!
+
+      - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Upload build folder via SCP
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p 9988 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload dist folder via SCP
         env:
           SERVER_USER: ${{ secrets.SSH_USER }}
           SERVER_IP: ${{ secrets.SSH_HOST }}

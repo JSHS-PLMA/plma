@@ -25,7 +25,7 @@ const MarqueeText = ({ text, len = 20 }) => {
     );
 };
 
-async function generateIframe(currentMusic, playerRef) {
+async function generateIframe(currentMusic, playerRef, rangeRef, videoSeekTo) {
     if (!currentMusic || !window.YT) return;
 
     for (let x of playerRef.current) {
@@ -67,7 +67,9 @@ async function generateIframe(currentMusic, playerRef) {
                     },
                     onStateChange: (event) => {
                         if (event.data === window.YT.PlayerState.ENDED) {
-                            videoSeekTo(0, playerRef);
+                            player.seekTo(rangeRef.current[0], true);
+                            player.playVideo();
+                            videoSeekTo(rangeRef.current[0], playerRef);
                         }
                     },
                 },
@@ -107,29 +109,7 @@ async function handleVideo(playerRef, videoTickRef, playing, videoTick) {
     }
 }
 
-async function videoSeekTo(t, playerRef) {
-    t = Number(t);
-    const promises = playerRef.current.map((player) => {
-        if (player && player.seekTo) {
-            return new Promise((resolve) => {
-                player.seekTo(t, true);
-
-                const check = () => {
-                    const currentTime = player.getCurrentTime();
-                    console.log(currentTime, t);
-                    if (Math.abs(currentTime - t) < 0.1) resolve();
-                    else requestAnimationFrame(check);
-                };
-                requestAnimationFrame(check);
-            });
-        }
-        return Promise.resolve();
-    });
-
-    await Promise.all(promises);
-}
-
-function VideoPlayer({ currentMusic, mode }) {
+function VideoPlayer({ currentMusic, mode, setRange = () => {} }) {
     const playerRef = useRef([]);
     const rangeRef = useRef([]);
 
@@ -141,6 +121,8 @@ function VideoPlayer({ currentMusic, mode }) {
     const [currentMusicTime, setCurrentMusicTime] = useState(0);
     const currentMusicTimeRef = useRef(0);
 
+    const seekRef = useRef(null);
+
     async function init() {
         if (!window.YT) {
             const tag = document.createElement('script');
@@ -150,7 +132,7 @@ function VideoPlayer({ currentMusic, mode }) {
         }
 
         window.onYouTubeIframeAPIReady = () => {
-            generateIframe(currentMusic, playerRef, rangeRef);
+            generateIframe(currentMusic, playerRef, rangeRef, videoSeekTo);
         };
     }
 
@@ -166,7 +148,12 @@ function VideoPlayer({ currentMusic, mode }) {
 
         while (res === -1) {
             console.warn('Retrying to play video...');
-            await generateIframe(currentMusic, playerRef, rangeRef);
+            await generateIframe(
+                currentMusic,
+                playerRef,
+                rangeRef,
+                videoSeekTo
+            );
             res = await handleVideo(
                 playerRef,
                 videoTickRef,
@@ -188,7 +175,7 @@ function VideoPlayer({ currentMusic, mode }) {
         if (!isDragging.current) setCurrentMusicTime(time);
         if (time > end || time < start) {
             currentMusicTimeRef.current = start;
-            await videoSeekTo(start, playerRef);
+            await videoSeekTo(start, playerRef, seekRef);
         }
 
         const diff = time - shadowTime;
@@ -201,6 +188,38 @@ function VideoPlayer({ currentMusic, mode }) {
         }
 
         videoTickRef.current = requestAnimationFrame(videoTick);
+    }
+
+    async function videoSeekTo(t) {
+        t = Number(t);
+
+        if (seekRef.current == null) seekRef.current = t;
+        else {
+            seekRef.current = t;
+            return;
+        }
+
+        const promises = playerRef.current.map((player) => {
+            if (player && player.seekTo) {
+                return new Promise((resolve) => {
+                    player.seekTo(seekRef.current, true);
+
+                    const check = () => {
+                        const currentTime = player.getCurrentTime();
+                        if (seekRef.current == null) return resolve();
+                        if (Math.abs(currentTime - seekRef.current) < 0.1) {
+                            seekRef.current = null;
+                            return resolve();
+                        } else requestAnimationFrame(check);
+                    };
+
+                    requestAnimationFrame(check);
+                });
+            }
+            return Promise.resolve();
+        });
+
+        await Promise.all(promises);
     }
 
     async function onInput(time) {
@@ -220,6 +239,7 @@ function VideoPlayer({ currentMusic, mode }) {
 
     async function onCutChangeComplete(start, end) {
         rangeRef.current = [start, end];
+        setRange([start, end]);
     }
 
     useEffect(() => {
@@ -227,7 +247,6 @@ function VideoPlayer({ currentMusic, mode }) {
     }, [playerRef, rangeRef, currentMusic?.videoId]);
 
     useEffect(() => {
-        console.log(currentMusic?.duration);
         if (currentMusic?.videoId) {
             cancelAnimationFrame(videoTickRef.current);
 
@@ -236,11 +255,12 @@ function VideoPlayer({ currentMusic, mode }) {
                 const end =
                     currentMusic?.duration > maxLength
                         ? maxLength
-                        : currentMusic?.duration - 1;
+                        : currentMusic?.duration;
 
                 rangeRef.current = [start, end];
+                setRange([start, end]);
 
-                generateIframe(currentMusic, playerRef, rangeRef);
+                generateIframe(currentMusic, playerRef, rangeRef, videoSeekTo);
             }
         } else if (!currentMusic) {
             cancelAnimationFrame(videoTickRef.current);

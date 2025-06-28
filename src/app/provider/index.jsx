@@ -1,7 +1,7 @@
-import BrowserRouter from "./routerProvider";
+import BrowserRouter from './routerProvider';
 
-function Provider(){
-    return(
+function Provider() {
+    return (
         <>
             <BrowserRouter />
         </>

@@ -21,6 +21,7 @@ export function Slider2({
     className,
     maxLength = 300,
     disabled,
+    mode,
     onCutChange = () => {},
     onCutChangeComplete = () => {},
     onInput = () => {},
@@ -114,9 +115,14 @@ export function Slider2({
         >
             <div className="slider">
                 <div className="track"></div>
-                <div className="range"></div>
-                <div className="thumb left"></div>
-                <div className="thumb right"></div>
+                {mode != 'edit' ? (
+                    ''
+                ) : (
+                    <>
+                        <div className="thumb left"></div>
+                        <div className="thumb right"></div>
+                    </>
+                )}
                 <div className="thumb playThumb"></div>
             </div>
 
@@ -133,6 +139,7 @@ export function Slider2({
                 ref={cutStartInpRef}
                 defaultValue={min}
                 list="markers"
+                hidden={mode != 'edit'}
             />
 
             <input
@@ -148,6 +155,7 @@ export function Slider2({
                 ref={cutEndInpRef}
                 defaultValue={max - min > maxLength ? maxLength : max}
                 list="markers"
+                hidden={mode != 'edit'}
             />
 
             <input

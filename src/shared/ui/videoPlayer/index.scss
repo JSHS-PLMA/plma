@@ -14,6 +14,7 @@
         .wrap {
             width: 100%;
             aspect-ratio: calc(16 / (9 * 1.1));
+            background: transparent;
             position: absolute;
             display: flex;
             transition: opacity 0.3s ease-in-out;
@@ -21,6 +22,7 @@
             .youtube-player {
                 width: 100%;
                 aspect-ratio: 16/9;
+                background: transparent;
                 position: absolute;
                 pointer-events: none;
                 overflow: hidden;
@@ -28,11 +30,13 @@
 
                 .img-container {
                     width: 100%;
+                    background: transparent;
                     display: flex;
                     align-items: center;
 
                     img {
                         width: 100%;
+                        background: transparent;
                         object-fit: cover;
                         border-radius: 15px;
                     }
@@ -137,11 +141,12 @@
         }
 
         .play_button {
-            width: 30%;
+            width: 100%;
             display: flex;
             flex-flow: row wrap;
             justify-content: space-around;
             align-items: center;
+            padding-inline: 35%;
 
             .music_button {
                 cursor: pointer;
@@ -178,6 +183,10 @@
 
                     &.shadow {
                         background: #f0f0f0;
+                    }
+
+                    iframe {
+                        opacity: 0;
                     }
 
                     img {

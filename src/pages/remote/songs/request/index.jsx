@@ -12,18 +12,12 @@ import VideoPlayer from '~shared/ui/videoPlayer';
 const TITLE = import.meta.env.VITE_TITLE;
 
 function Songs_Request() {
-    const playerRef = useRef(null);
-    const playerShadowRef = useRef(null);
-
-    const [playing, setPlaying] = useState(false);
-
     const [currentMusic, setCurrentMusic] = useState();
 
     const videoStart = useRef(0);
     const videoEnd = useRef(0);
 
-    const [videoStartDisplay, setVideoStartDisplay] = useState(0);
-    const [videoEndDisplay, setVideoEndDisplay] = useState(0);
+    const [range, setRange] = useState([0, 0]);
 
     const [checked, setChecked] = useState(false);
     const [coolDown, setCoolDown] = useState(false);
@@ -62,8 +56,8 @@ function Songs_Request() {
         try {
             const res = await postData('/api/remote/songs', {
                 ...currentMusic,
-                start: videoStart.current,
-                end: videoEnd.current,
+                start: range[0],
+                end: range[1],
                 requester: 594,
             });
 
@@ -114,7 +108,11 @@ function Songs_Request() {
 
                         <div className="music_content">
                             <div className="player_wrap">
-                                <VideoPlayer currentMusic={currentMusic} />
+                                <VideoPlayer
+                                    currentMusic={currentMusic}
+                                    mode="edit"
+                                    setRange={setRange}
+                                />
                             </div>
                             {currentMusic?.videoId ? (
                                 <div className="music_form">
@@ -130,11 +128,8 @@ function Songs_Request() {
                                         <Form.Text>
                                             신청곡 재생 범위:{' '}
                                             <span>
-                                                {formatSeconds(
-                                                    videoStartDisplay
-                                                )}{' '}
-                                                ~{' '}
-                                                {formatSeconds(videoEndDisplay)}
+                                                {formatSeconds(range[0])} ~{' '}
+                                                {formatSeconds(range[1])}
                                             </span>
                                         </Form.Text>
                                     </Form>

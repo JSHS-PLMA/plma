@@ -44,6 +44,7 @@ import PLMA_Accounts from '~pages/plma/accounts';
 import IAM_Accounts from '~pages/iam/accounts';
 
 import Page404 from '~pages/404';
+import Page403 from '~pages/403';
 
 // ###
 
@@ -106,9 +107,8 @@ const routesWithPermissions = [
 function AppRouterInner() {
     const { user } = useUser();
 
-    // permissions가 아직 로드되지 않았다면
     if (!user || !user.permissions) {
-        return <div>Loading...</div>; // 또는 스피너 컴포넌트
+        return <div>Loading...</div>;
     }
 
     const router = useMemo(() => {
@@ -118,10 +118,17 @@ function AppRouterInner() {
                     !route.pathKey.permission ||
                     user.permissions.has(route.pathKey.permission)
             )
-            .map(({ pathKey, element }) => ({
-                path: pathKey.link,
-                element,
-            }));
+            .map(({ pathKey, element }) =>
+                !pathKey.permission || user.permissions.has(pathKey.permission)
+                    ? {
+                          path: pathKey.link,
+                          element,
+                      }
+                    : {
+                          path: pathKey.link,
+                          element: <Page403 />,
+                      }
+            );
 
         return createBrowserRouter([
             {

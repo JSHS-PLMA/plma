@@ -5,12 +5,12 @@ import './index.scss';
 
 const TITLE = import.meta.env.VITE_TITLE;
 
-function Page404() {
+function Page403() {
     return (
         <>
-            <div id="404">404 Error</div>
+            <div id="403">403 Error: You Don't have access to this page.</div>
         </>
     );
 }
 
-export default Page404;
+export default Page403;

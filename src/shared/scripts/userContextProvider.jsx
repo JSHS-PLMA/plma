@@ -69,10 +69,6 @@ export const UserProvider = ({ children }) => {
 
     async function init() {
         const data = (await axios.get('/api/check-session')).data;
-        console.log({
-            ...data,
-            permissions: new Set(data.permissions),
-        });
 
         setUser({
             ...data,

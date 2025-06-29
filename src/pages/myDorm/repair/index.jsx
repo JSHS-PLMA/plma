@@ -121,7 +121,6 @@ function MyDorm_Repair() {
                     size="sm"
                     key={`button-cancel-${id}`}
                     onClick={() => handleClickDelete(id)}
-                    disabled
                 >
                     취소
                 </Button>,
@@ -231,7 +230,7 @@ function MyDorm_Repair() {
                                 )}
                             </Form.Group>
 
-                            <Button type="submit" variant="primary">
+                            <Button type="submit" variant="primary" disabled>
                                 제출
                             </Button>
                         </Form>

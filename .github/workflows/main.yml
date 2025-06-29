@@ -20,13 +20,9 @@ jobs:
           node-version: '22'  # 프로젝트에 맞게 조절
 
       - name: Create .env file for React build
-        env:
-          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
-          VITE_ENV_MODE: ${{ secrets.VITE_ENV_MODE }}
         run: |
-          echo "VITE_API_BASE=$VITE_API_BASE" > .env
-          echo "VITE_ENV_MODE=$VITE_ENV_MODE" >> .env
-          echo "$VITE_ENV_MODE"
+          echo VITE_API_BASE=${{secrets.VITE_API_BASE}} >> .env
+          echo VITE_ENV_MODE=${{secrets.VITE_ENV_MODE} >> .env
 
       - name: Install dependencies
         run: npm install

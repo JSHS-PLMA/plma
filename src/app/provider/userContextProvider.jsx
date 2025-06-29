@@ -54,7 +54,10 @@ export const useUser = () => useContext(UserContext);
 // Provider
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState({
-        permissions: userType['guest'],
+        permissions:
+            import.meta.env.VITE_ENV_MODE == 'development'
+                ? userType['admin']
+                : '',
     });
 
     async function init() {
@@ -67,7 +70,6 @@ export const UserProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        console.log(import.meta.env);
         if (import.meta.env.VITE_ENV_MODE == 'production') init();
     }, []);
 

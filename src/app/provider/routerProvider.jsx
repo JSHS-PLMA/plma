@@ -5,6 +5,9 @@ import {
     useLocation,
 } from 'react-router-dom';
 
+import { useContext, createContext, useEffect } from 'react';
+import { UserProvider, useUser } from './userContextProvider';
+
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 
@@ -49,95 +52,14 @@ import Navbar from '~shared/ui/navbar';
 import Sidebar from '~shared/ui/sidebar';
 import { pathKeys } from '~shared/lib/react-router/pathKey.js';
 
-const userType = {
-    student: new Set([
-        'viewMyPointsView',
-
-        'viewMyDormView',
-        'viewMyDormRepair',
-
-        'viewSchoolMyInfo',
-        'viewSchoolReportCard',
-    ]),
-    admin: new Set([
-        'viewPointsView',
-        'viewPointsApply',
-        'viewPointsEdit',
-        'viewPointsUserHistory',
-        'viewPointsHistory',
-        'viewPointsRemarks',
-        'viewPointsReason',
-        'viewPointsLogs',
-        'viewPointsFix',
-        'viewMyPointsView',
-
-        'viewDormStatus',
-        'viewDormSettings',
-        'viewDormRepair',
-        'viewMyDormView',
-        'viewMyDormRepair',
-
-        'viewRemoteCaseControl',
-        'viewRemoteCaseSchedule',
-        'viewRemoteCaseHistory',
-        'viewRemoteSongsView',
-        'viewRemoteSongsRequest',
-
-        'viewPLMAAccounts',
-        'viewIAMAccounts',
-        'viewIAMAccess',
-    ]),
-};
-
-// const allPermissions = [
-//     'viewIAM',
-//     'applyAccess',
-//     'viewIAMAccess',
-//     'viewAll',
-//     'viewApply',
-//     'viewHistory',
-//     'viewCaseControl',
-//     'viewReason',
-//     'viewBanned',
-//     'viewStudent',
-//     'viewTeacher',
-//     'deleteHistory',
-//     'deleteBannedHistory',
-//     'deployIAM',
-//     'refreshIAM',
-//     'addIAMAccount',
-//     'applyPoint',
-//     'addReason',
-//     'editReason',
-//     'deleteReason',
-//     'editStudent',
-//     'editTeacher',
-//     'caseOpen',
-//     'caseOpenAll',
-//     'caseClose',
-//     'caseCloseAll',
-//     'viewDorm',
-//     'viewDormManage',
-//     'viewCheckHistory',
-//     'addStudent',
-//     'deleteStudent',
-//     'addTeacher',
-//     'deleteTeacher',
-//     'najuredhawk',
-//     'viewRecovery',
-//     'viewCheck',
-//     'viewCaseSchedule',
-// ];
-
-const userPermissions = userType['admin'];
-
 function Layout() {
     const location = useLocation();
     const isFullScreen = location.pathname === pathKeys.about.root().link;
+    const { user } = useUser();
 
     return (
         <>
-            <Sidebar userPermissions={userPermissions} />
+            <Sidebar userPermissions={user.permissions} />
             <Navbar />
             <div className={isFullScreen ? 'fullScreen' : 'panel'}>
                 <div className="panel_wrap">
@@ -181,21 +103,34 @@ const routesWithPermissions = [
     { pathKey: pathKeys.remote.songs.request(), element: <Songs_Request /> },
 ];
 
-const filteredRoutes = routesWithPermissions
-    .filter(
-        (route) =>
-            !route.pathKey.permission ||
-            userPermissions.has(route.pathKey.permission)
-    )
-    .map(({ pathKey, element }) => ({ path: pathKey.link, element }));
+function AppRouterInner() {
+    const { user } = useUser();
 
-const browserRouter = createBrowserRouter([
-    {
-        element: <Layout />,
-        children: [...filteredRoutes, { path: '*', element: <Page404 /> }],
-    },
-]);
+    const filteredRoutes = routesWithPermissions
+        .filter(
+            (route) =>
+                !route.pathKey.permission ||
+                user.permissions.has(route.pathKey.permission)
+        )
+        .map(({ pathKey, element }) => ({
+            path: pathKey.link,
+            element,
+        }));
+
+    const router = createBrowserRouter([
+        {
+            element: <Layout />,
+            children: [...filteredRoutes, { path: '*', element: <Page404 /> }],
+        },
+    ]);
+
+    return <RouterProvider router={router} />;
+}
 
 export default function AppRouter() {
-    return <RouterProvider router={browserRouter} />;
+    return (
+        <UserProvider>
+            <AppRouterInner />
+        </UserProvider>
+    );
 }

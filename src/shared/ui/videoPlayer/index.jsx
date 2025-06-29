@@ -69,7 +69,7 @@ async function generateIframe(currentMusic, playerRef, rangeRef, videoSeekTo) {
                         if (event.data === window.YT.PlayerState.ENDED) {
                             player.seekTo(rangeRef.current[0], true);
                             player.playVideo();
-                            videoSeekTo(rangeRef.current[0], playerRef);
+                            videoSeekTo(rangeRef.current[0]);
                         }
                     },
                 },
@@ -109,7 +109,12 @@ async function handleVideo(playerRef, videoTickRef, playing, videoTick) {
     }
 }
 
-function VideoPlayer({ currentMusic, mode, setRange = () => {} }) {
+function VideoPlayer({
+    currentMusic,
+    mode,
+    setRange = () => {},
+    Buttons = <></>,
+}) {
     const playerRef = useRef([]);
     const rangeRef = useRef([]);
 
@@ -175,7 +180,7 @@ function VideoPlayer({ currentMusic, mode, setRange = () => {} }) {
         if (!isDragging.current) setCurrentMusicTime(time);
         if (time > end || time < start) {
             currentMusicTimeRef.current = start;
-            await videoSeekTo(start, playerRef, seekRef);
+            await videoSeekTo(start);
         }
 
         const diff = time - shadowTime;
@@ -193,10 +198,11 @@ function VideoPlayer({ currentMusic, mode, setRange = () => {} }) {
     async function videoSeekTo(t) {
         t = Number(t);
 
-        if (seekRef.current == null) seekRef.current = t;
-        else {
+        if (seekRef.current == null || seekRef.current == t) {
             seekRef.current = t;
-            return;
+        } else {
+            seekRef.current = t;
+            if (seekRef.current != t) return;
         }
 
         const promises = playerRef.current.map((player) => {
@@ -231,7 +237,7 @@ function VideoPlayer({ currentMusic, mode, setRange = () => {} }) {
         if (time < start || time > end) {
             time = start;
         }
-        await videoSeekTo(time, playerRef);
+        await videoSeekTo(time);
         setCurrentMusicTime(time);
         currentMusicTimeRef.current = time;
         isDragging.current = false;
@@ -251,11 +257,7 @@ function VideoPlayer({ currentMusic, mode, setRange = () => {} }) {
             cancelAnimationFrame(videoTickRef.current);
 
             if (window.YT && window.YT.Player) {
-                const start = 0;
-                const end =
-                    currentMusic?.duration > maxLength
-                        ? maxLength
-                        : currentMusic?.duration;
+                const { start, end } = currentMusic;
 
                 rangeRef.current = [start, end];
                 setRange([start, end]);
@@ -308,6 +310,8 @@ function VideoPlayer({ currentMusic, mode, setRange = () => {} }) {
                         </div>
                     </div>
                 </div>
+
+                <div className="button_wrap wrap">{Buttons}</div>
 
                 <div className="info">
                     <div className="video-title video-infoBox">

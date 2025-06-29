@@ -1,12 +1,12 @@
-import { useLocation, useNavigate, Link, matchPath } from 'react-router-dom'
-import { useState, useEffect, useRef } from 'react'
+import { useLocation, useNavigate, Link, matchPath } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 
-import './index.scss'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import './index.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { config } from '~shared/lib/sidebar/config.js'
+import { config } from '~shared/lib/sidebar/config.js';
 
-const TITLE = import.meta.env.VITE_TITLE
+const TITLE = import.meta.env.VITE_TITLE;
 
 /*
 
@@ -24,19 +24,19 @@ const $linkWrap = ({
     click,
     check,
 }) => {
-    const contentRef = useRef(null)
-    const [maxHeight, setMaxHeight] = useState('0px')
+    const contentRef = useRef(null);
+    const [maxHeight, setMaxHeight] = useState('0px');
 
     useEffect(() => {
         if (contentRef.current) {
-            if (isOpen) setMaxHeight(`${contentRef.current.scrollHeight}px`)
-            else setMaxHeight('0px')
+            if (isOpen) setMaxHeight(`${contentRef.current.scrollHeight}px`);
+            else setMaxHeight('0px');
         }
-    }, [isOpen])
+    }, [isOpen]);
 
     const isWatching = data.links.some((link) =>
         matchPath({ path: link.pathKey.link, end: false }, watching)
-    )
+    );
 
     return (
         <ul
@@ -54,14 +54,14 @@ const $linkWrap = ({
 
             <div className="wrap" ref={contentRef} style={{ maxHeight }}>
                 {data.links.map((link, idx) => {
-                    if (!check(link.pathKey)) return ''
+                    if (!check(link.pathKey)) return '';
                     else
                         return (
                             <li
                                 key={idx}
                                 className={`link${matchPath({ path: link.pathKey.link, end: false }, watching) ? ' watching' : ''}`}
                                 onClick={() => {
-                                    click(link.pathKey)
+                                    click(link.pathKey);
                                 }}
                             >
                                 <FontAwesomeIcon
@@ -70,40 +70,40 @@ const $linkWrap = ({
                                 />
                                 <p className="links">{link.name}</p>
                             </li>
-                        )
+                        );
                 })}
             </div>
         </ul>
-    )
-}
+    );
+};
 
 const $group = ({ id, data, watching, click, check }) => {
     const [openGroups, setOpenGroups] = useState(() => {
-        const initialState = {}
+        const initialState = {};
         data.wraps.forEach((_, idx) => {
-            initialState[idx] = true
-        })
-        return initialState
-    })
+            initialState[idx] = true;
+        });
+        return initialState;
+    });
 
     const toggleOpen = (id) => {
         setOpenGroups((prev) => ({
             ...prev,
             [id]: !prev[id],
-        }))
-    }
+        }));
+    };
 
     const wrapsValid = data.wraps.map((wrap, idx) => {
         const isValid = wrap.links
             .map((x, idx) => {
-                return check(x.pathKey)
+                return check(x.pathKey);
             })
-            .reduce((x, y) => x || y)
+            .reduce((x, y) => x || y);
 
-        return isValid
-    })
+        return isValid;
+    });
 
-    const groupValid = wrapsValid.reduce((x, y) => x || y)
+    const groupValid = wrapsValid.reduce((x, y) => x || y);
 
     if (groupValid)
         return (
@@ -126,33 +126,33 @@ const $group = ({ id, data, watching, click, check }) => {
                                 click={click}
                                 check={check}
                             />
-                        )
-                    else return ''
+                        );
+                    else return '';
                 })}
             </div>
-        )
-    else return ''
-}
+        );
+    else return '';
+};
 
 function SideBar(props) {
-    const [data, setData] = useState()
-    const location = useLocation()
-    const navigate = useNavigate()
-    const { userPermissions } = props
+    const [data, setData] = useState();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { userPermissions } = props;
 
     useEffect(() => {
-        setData(config)
-    }, [])
+        setData(config);
+    }, []);
 
     function pageTo(pathKey) {
         if (!pathKey.permission || userPermissions.has(pathKey.permission))
-            navigate(pathKey.link)
+            navigate(pathKey.link);
     }
 
     function validPermission(pathKey) {
         if (!pathKey.permission || userPermissions.has(pathKey.permission))
-            return true
-        else return false
+            return true;
+        else return false;
     }
 
     return (
@@ -180,7 +180,7 @@ function SideBar(props) {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default SideBar
+export default SideBar;

@@ -10,11 +10,16 @@
 
     .music_content {
         width: 100%;
-        max-width: 1500px;
         display: flex;
         position: relative;
         justify-content: space-between;
-        padding-inline: 50px;
+        padding-inline: 100px 150px;
+
+        @media (max-width: 1500px) {
+            & {
+                padding-inline: 0;
+            }
+        }
     }
 
     .music_player {
@@ -179,6 +184,12 @@
                             border-bottom: 1px solid #343a40;
                         }
 
+                        &:has(.confirmed) {
+                            .rank {
+                                background: rgba($jshsusColorLight, 1);
+                            }
+                        }
+
                         &:hover td {
                             background: rgba(#343a40, 0.1);
                         }
@@ -210,6 +221,10 @@
                             }
                         }
                     }
+                }
+
+                .isConfirmed {
+                    display: none;
                 }
 
                 .rank {

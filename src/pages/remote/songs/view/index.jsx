@@ -1,18 +1,22 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import useAudio from '~shared/hooks/useAudio.js';
 
 import './index.scss';
 
-import { Card, DropdownButton, Dropdown } from 'react-bootstrap';
+import { Card, Dropdown, ToggleButton } from 'react-bootstrap';
 import DataTable from '~shared/ui/datatable';
 
 import { getData, postData } from '~shared/scripts/requestData.js';
 import moment from 'moment';
 import VideoPlayer from '~shared/ui/videoPlayer';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 const TITLE = import.meta.env.VITE_TITLE;
+
+const adminMode = false;
 
 const CustomToggle = React.forwardRef(({ children, onClick, isOpen }, ref) => {
     return (
@@ -30,6 +34,30 @@ const CustomToggle = React.forwardRef(({ children, onClick, isOpen }, ref) => {
         </p>
     );
 });
+
+const Buttons = ({ isVoteActive = false, onVoteClick = () => {} }) => {
+    return (
+        <>
+            {adminMode ? (
+                <ToggleButton variant="outline-dark">
+                    <FontAwesomeIcon icon="fa-solid fa-sliders" /> 편집하기
+                </ToggleButton>
+            ) : (
+                <span></span>
+            )}
+            <ToggleButton
+                variant="outline-dark"
+                type="checkbox"
+                checked={isVoteActive}
+                onClick={onVoteClick}
+                className="vote_button"
+            >
+                <FontAwesomeIcon icon="fa-solid fa-check-to-slot" />{' '}
+                {isVoteActive ? '투표 완료' : '투표하기'}
+            </ToggleButton>
+        </>
+    );
+};
 
 function Songs_View() {
     const [columns, setColumns] = useState([]);
@@ -65,9 +93,15 @@ function Songs_View() {
     }
 
     function updateTableData(data) {
+        data = data.sort((a, b) => {
+            if (a.confirmed == b.confirmed) return b.voteCount > a.voteCount;
+            else if (a.confirmed && !b.confirmed) return -1;
+            else return 1;
+        });
+
         setTableData(
             data.map((x, idx) => [
-                idx + 1,
+                <span>{idx + 1}</span>,
                 <span className="title_wrapper">
                     <span className="song_title song_title_text">
                         {cutText(x.title, 40)}
@@ -76,6 +110,9 @@ function Songs_View() {
                         {x.artist}
                     </span>
                 </span>,
+                <span
+                    className={adminMode && x.confirmed ? 'confirmed' : ''}
+                ></span>,
                 <span
                     className={`song_icon ${x.userVoted ? 'selected' : ''}`}
                     onClick={() => {
@@ -88,6 +125,7 @@ function Songs_View() {
         setColumns([
             { data: '순위', orderable: false, className: 'rank' },
             { data: '제목', orderable: false, className: 'songTitle' },
+            { className: 'isConfirmed' },
             { data: '투표', orderable: false, className: 'voted' },
         ]);
     }
@@ -190,7 +228,22 @@ function Songs_View() {
                     <Card.Body>
                         <div className="music_content">
                             <div className="music_player">
-                                <VideoPlayer currentMusic={currentMusic} />
+                                <VideoPlayer
+                                    currentMusic={currentMusic}
+                                    Buttons={
+                                        <Buttons
+                                            isVoteActive={
+                                                currentMusic?.userVoted
+                                            }
+                                            onVoteClick={() => {
+                                                songVote(
+                                                    currentMusic,
+                                                    currentMusicIdx
+                                                );
+                                            }}
+                                        />
+                                    }
+                                />
                             </div>
 
                             <div className="music_selector">

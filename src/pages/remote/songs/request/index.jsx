@@ -33,7 +33,13 @@ function Songs_Request() {
         const link = e.target[0].value;
         const res = await postData('/api/remote/songs/check', { link });
 
-        setCurrentMusic(res[0]);
+        const music = {
+            ...res[0],
+            start: 0,
+            end: res[0].duration || 0,
+        };
+
+        setCurrentMusic(music);
     }
 
     useEffect(() => {}, [currentMusic?.videoId]);
@@ -110,7 +116,6 @@ function Songs_Request() {
                             <div className="player_wrap">
                                 <VideoPlayer
                                     currentMusic={currentMusic}
-                                    mode="edit"
                                     setRange={setRange}
                                 />
                             </div>
@@ -124,13 +129,6 @@ function Songs_Request() {
                                         <Form.Text>
                                             신청곡 재생 기간:{' '}
                                             <span>{currentMusic?.title}</span>
-                                        </Form.Text>
-                                        <Form.Text>
-                                            신청곡 재생 범위:{' '}
-                                            <span>
-                                                {formatSeconds(range[0])} ~{' '}
-                                                {formatSeconds(range[1])}
-                                            </span>
                                         </Form.Text>
                                     </Form>
 
@@ -185,6 +183,11 @@ function Songs_Request() {
                                                 <li>
                                                     잔잔한 노래(발라드 등) 은/는
                                                     등록하지 아니함.
+                                                </li>
+                                                <li>
+                                                    곡의 길이가 5분을 초과하는
+                                                    경우, 방송부 담당자가 적절히
+                                                    편집하여 방송함.
                                                 </li>
                                             </ul>
                                         </div>

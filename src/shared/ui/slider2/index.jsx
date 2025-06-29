@@ -13,6 +13,10 @@ function formatSeconds(seconds) {
     }
 }
 
+const delay = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 export function Slider2({
     min = 0,
     max = 0,
@@ -38,6 +42,10 @@ export function Slider2({
 
     const isDragging = useRef(false);
 
+    const leftThumbRef = useRef(null);
+    const rightThumbRef = useRef(null);
+    const playThumbRef = useRef(null);
+
     const [cutStart, setCutStart] = useState(min);
     const [cutEnd, setCutEnd] = useState(
         max - min > maxLength ? maxLength : max
@@ -61,6 +69,15 @@ export function Slider2({
         );
         wrapperRef.current.style.setProperty('--cutEndPercent', endVal / max);
 
+        wrapperRef.current.style.setProperty(
+            '--cutStartPercent-txt',
+            `"${formatSeconds(startVal)}"`
+        );
+        wrapperRef.current.style.setProperty(
+            '--cutEndPercent-txt',
+            `"${formatSeconds(endVal)}"`
+        );
+
         onCutChange(startVal, endVal);
     }
 
@@ -75,6 +92,10 @@ export function Slider2({
         const startVal = Number(cutStartRef.current);
         const endVal = Number(cutEndRef.current);
         wrapperRef.current.style.setProperty('--rangePercent', val / max || 0);
+        wrapperRef.current.style.setProperty(
+            '--rangePercent-txt',
+            `"${formatSeconds(val)}"`
+        );
     }
 
     function onPlayInput() {
@@ -119,20 +140,25 @@ export function Slider2({
                     ''
                 ) : (
                     <>
-                        <div className="thumb left"></div>
-                        <div className="thumb right"></div>
+                        <div className="thumb left" ref={leftThumbRef}></div>
+                        <div className="thumb right" ref={rightThumbRef}></div>
                     </>
                 )}
-                <div className="thumb playThumb"></div>
+                <div className="thumb playThumb" ref={playThumbRef}></div>
             </div>
 
             <input
                 type="range"
                 step={0.1}
                 onInput={onCutInput}
-                onMouseUp={(e) => {
+                onMouseDown={() => {
+                    leftThumbRef.current.className = 'thumb left show-value';
+                }}
+                onMouseUp={async (e) => {
                     e.target.value = cutStartRef.current;
                     onCutComplete();
+                    await delay(500);
+                    leftThumbRef.current.className = 'thumb left';
                 }}
                 min={min}
                 max={max}
@@ -146,9 +172,14 @@ export function Slider2({
                 type="range"
                 step={0.1}
                 onInput={onCutInput}
-                onMouseUp={(e) => {
+                onMouseDown={() => {
+                    rightThumbRef.current.className = 'thumb right show-value';
+                }}
+                onMouseUp={async (e) => {
                     e.target.value = cutEndRef.current;
                     onCutComplete();
+                    await delay(500);
+                    rightThumbRef.current.className = 'thumb right';
                 }}
                 min={min}
                 max={max}
@@ -170,18 +201,17 @@ export function Slider2({
                 onMouseDown={() => {
                     isDragging.current = true;
                     onInput();
+                    playThumbRef.current.className =
+                        'thumb playThumb show-value';
                 }}
-                onMouseUp={() => {
+                onMouseUp={async () => {
                     onPlayInputComplete();
                     onInputComplete(playerInpRef.current.value);
                     isDragging.current = false;
+                    await delay(500);
+                    playThumbRef.current.className = 'thumb playThumb';
                 }}
             />
-
-            <datalist id="markers">
-                <option value={0}></option>
-                <option value={max}></option>
-            </datalist>
 
             <div className="time-container">
                 <span ref={valueRef}>{formatSeconds(0)}</span>

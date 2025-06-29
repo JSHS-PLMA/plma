@@ -57,7 +57,7 @@ export const UserProvider = ({ children }) => {
         permissions:
             import.meta.env.VITE_ENV_MODE == 'development'
                 ? userType['admin']
-                : '',
+                : new Set([]),
     });
 
     async function init() {

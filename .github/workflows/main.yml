@@ -19,6 +19,12 @@ jobs:
         with:
           node-version: '22'  # 프로젝트에 맞게 조절
 
+      - name: Create .env file for React build
+        run: |
+          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" > .env
+          # 필요한 환경변수가 있으면 여기에 계속 추가 가능
+          # 예: echo "REACT_APP_OTHER_VAR=${{ secrets.OTHER_VAR }}" >> .env
+
       - name: Install dependencies
         run: npm install
 

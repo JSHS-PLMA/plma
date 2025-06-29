@@ -70,7 +70,14 @@ export const UserProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        if (import.meta.env.VITE_ENV_MODE == 'production') init();
+        console.log(
+            import.meta.env.VITE_ENV_MODE,
+            import.meta.env.VITE_ENV_MODE == 'production'
+        );
+        if (import.meta.env.VITE_ENV_MODE == 'production') {
+            console.log(import.meta.env.VITE_ENV_MODE);
+            init();
+        }
     }, []);
 
     return (

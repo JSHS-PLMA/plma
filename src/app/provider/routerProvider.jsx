@@ -103,7 +103,14 @@ const routesWithPermissions = [
     { pathKey: pathKeys.remote.songs.request(), element: <Songs_Request /> },
 ];
 
-function AppRouterInner(user) {
+function AppRouterInner() {
+    const { user } = useUser();
+
+    // permissions가 아직 로드되지 않았다면
+    if (!user || !user.permissions) {
+        return <div>Loading...</div>; // 또는 스피너 컴포넌트
+    }
+
     const router = useMemo(() => {
         const filteredRoutes = routesWithPermissions
             .filter(
@@ -131,11 +138,9 @@ function AppRouterInner(user) {
 }
 
 export default function AppRouter() {
-    const { user } = useUser();
-
     return (
         <UserProvider>
-            <AppRouterInner user={user} />
+            <AppRouterInner />
         </UserProvider>
     );
 }

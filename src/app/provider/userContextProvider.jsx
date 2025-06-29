@@ -65,7 +65,7 @@ export const UserProvider = ({ children }) => {
         console.log(data);
 
         setUser({
-            permissions: data.permissions,
+            permissions: new Set(data.permissions),
         });
     }
 

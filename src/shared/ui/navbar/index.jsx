@@ -1,25 +1,27 @@
-import { useLocation, useNavigate, matchPath } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 
-import "./index.scss";
-import { pathKeys } from "~shared/lib/react-router/pathKey.js";
+import './index.scss';
+
+import { useUser } from '~shared/scripts/userContextProvider';
 
 const Navbar = () => {
-    const [ userName, setUserName ] = useState();
-
-    useEffect(() => {
-        init();
-    }, []);
-
-    function init(){
-        setUserName("강재환");
-    }
+    const { user } = useUser();
 
     return (
         <div className="navbar">
             <div className="navbar_wrap">
                 <div className="nav-item account">
-                    <p className="nav-link account_name">{userName}</p>
+                    {user.isLogined ? (
+                        <p className="nav-link account_name">{user.name}</p>
+                    ) : (
+                        <Link
+                            to="https://iam.jshsus.kr/?service=iam2"
+                            className="nav-link account_name"
+                        >
+                            로그인
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>

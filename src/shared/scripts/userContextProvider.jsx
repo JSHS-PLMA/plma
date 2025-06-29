@@ -62,7 +62,6 @@ export const UserProvider = ({ children }) => {
 
     async function init() {
         const data = (await axios.get('/api/check-session')).data;
-        console.log(data);
 
         setUser({
             permissions: new Set(data.permissions),
@@ -70,12 +69,7 @@ export const UserProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        console.log(
-            import.meta.env.VITE_ENV_MODE,
-            import.meta.env.VITE_ENV_MODE == 'production'
-        );
         if (import.meta.env.VITE_ENV_MODE == 'production') {
-            console.log(import.meta.env.VITE_ENV_MODE);
             init();
         }
     }, []);

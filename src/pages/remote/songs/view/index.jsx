@@ -1,8 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-import useAudio from '~shared/hooks/useAudio.js';
-
 import './index.scss';
 
 import { Card, Dropdown, ToggleButton } from 'react-bootstrap';
@@ -13,6 +11,8 @@ import moment from 'moment';
 import VideoPlayer from '~shared/ui/videoPlayer';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+import { useUser } from '~shared/scripts/userContextProvider';
 
 const TITLE = import.meta.env.VITE_TITLE;
 

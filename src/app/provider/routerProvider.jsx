@@ -5,8 +5,7 @@ import {
     useLocation,
 } from 'react-router-dom';
 
-import { useContext, createContext, useEffect } from 'react';
-import { UserProvider, useUser } from './userContextProvider';
+import { UserProvider, useUser } from '~shared/scripts/userContextProvider';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';

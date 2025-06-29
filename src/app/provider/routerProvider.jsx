@@ -103,9 +103,7 @@ const routesWithPermissions = [
     { pathKey: pathKeys.remote.songs.request(), element: <Songs_Request /> },
 ];
 
-function AppRouterInner() {
-    const { user } = useUser();
-
+function AppRouterInner(user) {
     const router = useMemo(() => {
         const filteredRoutes = routesWithPermissions
             .filter(
@@ -133,9 +131,11 @@ function AppRouterInner() {
 }
 
 export default function AppRouter() {
+    const { user } = useUser();
+
     return (
         <UserProvider>
-            <AppRouterInner />
+            <AppRouterInner user={user} />
         </UserProvider>
     );
 }

@@ -81,6 +81,7 @@ export const pathKeys = {
             volunteer() {
                 return {
                     link: pathKeys.points.myPoints.root().concat('volunteer/'),
+                    permission: 'viewMyPointsVolunteer',
                 };
             },
         },

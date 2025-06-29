@@ -7,14 +7,10 @@ import { getData, deleteData, postData } from '~shared/scripts/requestData';
 import MySwal from '~shared/ui/sweetalert';
 import DataTable from '~shared/ui/datatable';
 
-function MyDorm_Repair() {
-    const [user, setUser] = useState({
-        id: 0,
-        name: '',
-        stuid: '',
-        room_id: '',
-    });
+import { useUser } from '~shared/scripts/userContextProvider';
 
+function MyDorm_Repair() {
+    const { user } = useUser();
     const [description, setDescription] = useState('');
     const [uploadedImage, setUploadedImage] = useState(null);
 
@@ -34,12 +30,6 @@ function MyDorm_Repair() {
     useEffect(() => {
         async function init() {
             try {
-                setUser({
-                    id: 32020,
-                    name: '강재환',
-                    stuid: '9988',
-                    room_id: '501',
-                });
                 await fetchReports();
                 setColumns([
                     { data: 'ID' },
@@ -129,6 +119,7 @@ function MyDorm_Repair() {
                     size="sm"
                     key={`button-cancel-${id}`}
                     onClick={() => handleClickDelete(id)}
+                    disabled
                 >
                     취소
                 </Button>,

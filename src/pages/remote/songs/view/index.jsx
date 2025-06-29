@@ -16,8 +16,6 @@ import { useUser } from '~shared/scripts/userContextProvider';
 
 const TITLE = import.meta.env.VITE_TITLE;
 
-const adminMode = false;
-
 const CustomToggle = React.forwardRef(({ children, onClick, isOpen }, ref) => {
     return (
         <p
@@ -35,7 +33,11 @@ const CustomToggle = React.forwardRef(({ children, onClick, isOpen }, ref) => {
     );
 });
 
-const Buttons = ({ isVoteActive = false, onVoteClick = () => {} }) => {
+const Buttons = ({
+    adminMode,
+    isVoteActive = false,
+    onVoteClick = () => {},
+}) => {
     return (
         <>
             {adminMode ? (
@@ -76,15 +78,24 @@ function Songs_View() {
 
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
 
+    const { user } = useUser();
+
+    const [adminMode, setAdminMode] = useState(
+        user.permissions.has('editSongs')
+    );
+
     useEffect(() => {
         init();
-    }, []);
+    }, [user]);
 
-    async function init() {}
+    async function init() {
+        setAdminMode(user.permissions.has('editSongs'));
+    }
 
     async function getPlayList(targetWeek) {
         const data = await getData('/api/remote/songs', {
             ...targetWeek,
+            iamId: user.iamId,
         });
 
         setPlayList(data);
@@ -235,6 +246,7 @@ function Songs_View() {
                                             isVoteActive={
                                                 currentMusic?.userVoted
                                             }
+                                            adminMode={adminMode}
                                             onVoteClick={() => {
                                                 songVote(
                                                     currentMusic,

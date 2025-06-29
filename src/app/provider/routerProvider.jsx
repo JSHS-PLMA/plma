@@ -50,6 +50,7 @@ import Page404 from '~pages/404';
 import Navbar from '~shared/ui/navbar';
 import Sidebar from '~shared/ui/sidebar';
 import { pathKeys } from '~shared/lib/react-router/pathKey.js';
+import { useEffect, useMemo } from 'react';
 
 function Layout() {
     const location = useLocation();
@@ -105,23 +106,28 @@ const routesWithPermissions = [
 function AppRouterInner() {
     const { user } = useUser();
 
-    const filteredRoutes = routesWithPermissions
-        .filter(
-            (route) =>
-                !route.pathKey.permission ||
-                user.permissions.has(route.pathKey.permission)
-        )
-        .map(({ pathKey, element }) => ({
-            path: pathKey.link,
-            element,
-        }));
+    const router = useMemo(() => {
+        const filteredRoutes = routesWithPermissions
+            .filter(
+                (route) =>
+                    !route.pathKey.permission ||
+                    user.permissions.has(route.pathKey.permission)
+            )
+            .map(({ pathKey, element }) => ({
+                path: pathKey.link,
+                element,
+            }));
 
-    const router = createBrowserRouter([
-        {
-            element: <Layout />,
-            children: [...filteredRoutes, { path: '*', element: <Page404 /> }],
-        },
-    ]);
+        return createBrowserRouter([
+            {
+                element: <Layout />,
+                children: [
+                    ...filteredRoutes,
+                    { path: '*', element: <Page404 /> },
+                ],
+            },
+        ]);
+    }, [user]);
 
     return <RouterProvider router={router} />;
 }

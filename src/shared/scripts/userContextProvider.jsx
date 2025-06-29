@@ -9,8 +9,8 @@ const userType = {
         'viewMyDormView',
         'viewMyDormRepair',
 
-        'viewSchoolMyInfo',
-        'viewSchoolReportCard',
+        'viewRemoteSongsView',
+        'viewRemoteSongsRequest',
     ]),
     admin: new Set([
         'viewPointsView',
@@ -39,6 +39,7 @@ const userType = {
         'viewPLMAAccounts',
         'viewIAMAccounts',
         'viewIAMAccess',
+        'editSongs',
     ]),
 };
 
@@ -56,8 +57,14 @@ export const UserProvider = ({ children }) => {
     const [user, setUser] = useState({
         permissions:
             import.meta.env.VITE_ENV_MODE == 'development'
-                ? userType['admin']
+                ? userType['student']
                 : new Set([]),
+        isLogined: import.meta.env.VITE_ENV_MODE == 'development',
+        name: '강재환',
+        stuid: '9988',
+        iamId: 594,
+        userId: 32020,
+        plmaId: 0,
     });
 
     async function init() {

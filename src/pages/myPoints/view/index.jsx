@@ -8,12 +8,13 @@ import './index.scss';
 import { Card, Badge, Button, Dropdown } from 'react-bootstrap';
 import DataTable from '~shared/ui/datatable';
 
-const userID = 34084; // 32067
+import { useUser } from '~shared/scripts/userContextProvider';
 
 function MyPoints_View() {
     const [userInfo, setUserInfo] = useState({});
     const [tableData, setTableData] = useState([]);
     const [columns, setColumns] = useState([]);
+    const { user } = useUser();
 
     const userRef = useRef();
 
@@ -26,13 +27,13 @@ function MyPoints_View() {
     useEffect(() => {
         async function init() {
             try {
-                const user = await getData('/api/points/user_history', {
-                    userID,
+                const rawUserInfo = await getData('/api/points/user_history', {
+                    userID: user.userId,
                 });
-                if (user['msg']) return;
-                userRef.current = user;
+                if (rawUserInfo['msg']) return;
+                userRef.current = rawUserInfo;
 
-                const { name, stuid, plus, minus } = user;
+                const { name, stuid, plus, minus } = rawUserInfo;
                 const etc = 0;
                 setUserInfo({
                     name,
@@ -59,14 +60,14 @@ function MyPoints_View() {
                     { data: '반영일시' },
                     { data: '#', orderable: false },
                 ]);
-                setupTable(user);
+                setupTable(rawUserInfo);
             } catch (error) {
                 console.error(error);
             }
         }
 
         init();
-    }, []);
+    }, [user]);
 
     function setupTable(data) {
         if (!data) return;

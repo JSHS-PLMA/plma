@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 
 const userType = {
+    guest: new Set(['']),
     student: new Set([
         'viewMyPointsView',
 
@@ -53,7 +54,7 @@ export const useUser = () => useContext(UserContext);
 // Provider
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState({
-        permissions: userType['admin'],
+        permissions: userType['guest'],
     });
 
     async function init() {

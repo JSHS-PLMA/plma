@@ -105,7 +105,6 @@ const routesWithPermissions = [
 
 function AppRouterInner() {
     const { user } = useUser();
-    console.log(user);
 
     const filteredRoutes = routesWithPermissions
         .filter(

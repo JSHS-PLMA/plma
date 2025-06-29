@@ -1,0 +1,39 @@
+#case_history {
+    .tableWrap {
+        width: 100%;
+
+        .remoteCaseHistoryTable {
+            width: 100%;
+
+            td {
+                font-size: 1rem;
+            }
+
+            .dt-content {
+                font-weight: bolder;
+
+                .type {
+                    color: #fff;
+                    padding-inline: 5px;
+                    padding-block: 2px;
+                    border-radius: 3px;
+                    margin-right: 10px;
+
+                    &.open {
+                        background: limegreen;
+                    }
+                    &.close {
+                        background: red;
+                    }
+                }
+
+                text-wrap: wrap;
+            }
+
+            .dt-reason {
+                width: 30rem !important;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+}

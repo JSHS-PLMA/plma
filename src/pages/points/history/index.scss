@@ -1,0 +1,60 @@
+@use '~shared/styles/variables.scss' as *;
+
+#points_history {
+    .tableWrap {
+        width: 100%;
+
+        .historyTable {
+            width: 100%;
+
+            td {
+                font-size: 1rem;
+            }
+
+            .dt-content {
+                .type {
+                    padding-inline: 5px;
+                    padding-block: 2px;
+                    border-radius: 3px;
+                    margin-right: 10px;
+                    font-family: 'Noto Sans KR', sans-serif;
+                    font-weight: 700;
+
+                    &.good {
+                        color: #00631b;
+                        background: #8affa7;
+                    }
+                    &.bad {
+                        color: #ff0000;
+                        background: #ffcfd4;
+                    }
+                    &.etc {
+                        color: #424242;
+                        background: #dfdfdf;
+                    }
+                }
+
+                text-wrap: wrap;
+            }
+
+            .dt-reason {
+                width: 30rem !important;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+}
+
+.edit-form {
+    padding: 1rem;
+    text-align: start;
+
+    .form-label {
+        padding-inline-start: 0.25rem;
+        font-size: 16px;
+    }
+
+    .row {
+        margin-bottom: 1rem;
+    }
+}

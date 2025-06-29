@@ -1,0 +1,183 @@
+@use '~shared/styles/variables.scss' as *;
+
+.multi-slider_wrapper {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    outline: none;
+    align-items: center;
+
+    $inputHeight: 5px;
+
+    --cutStartPercent: 0;
+    --cutEndPercent: 1;
+
+    --rangePercent: 0;
+
+    --rangePercent-txt: '0:00';
+    --cutStartPercent-txt: '0:00';
+    --cutEndPercent-txt: '0:00';
+
+    input[type='range'] {
+        width: 100%;
+        height: 5px;
+        position: absolute;
+        border-radius: 5px;
+        appearance: none;
+        outline: none;
+        opacity: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        user-select: none;
+
+        &::-webkit-slider-thumb {
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            position: relative;
+            top: 0;
+            border-radius: 0;
+            pointer-events: all;
+            cursor: ew-resize;
+        }
+    }
+
+    .slider {
+        width: 100%;
+        height: 10px;
+        position: absolute;
+        display: flex;
+        align-items: center;
+
+        .track {
+            width: 100%;
+            height: $inputHeight;
+            background-image:
+                linear-gradient(
+                    rgba($textColorDark, 0.2),
+                    rgba($textColorDark, 0.2)
+                ),
+                linear-gradient($jshsusColorDark, $jshsusColorDark),
+                linear-gradient($jshsusColorDark, $jshsusColorDark),
+                linear-gradient(
+                    rgba($textColorDark, 0.2),
+                    rgba($textColorDark, 0.2)
+                );
+            background-repeat: no-repeat;
+            background-position:
+                left center,
+                calc(
+                        100% * (var(--cutStartPercent)) /
+                            (1 - (var(--rangePercent) - var(--cutStartPercent)))
+                    )
+                    center,
+                calc(
+                        100% * (var(--rangePercent)) /
+                            (1 - (var(--cutEndPercent) - var(--rangePercent)))
+                    )
+                    center,
+                right center;
+            background-size:
+                calc(var(--cutStartPercent) * 100%) 2px,
+                calc((var(--rangePercent) - var(--cutStartPercent)) * 100%) 5px,
+                calc((var(--cutEndPercent) - var(--rangePercent)) * 100%) 2px,
+                calc(100% - 100% * var(--cutEndPercent)) 2px;
+            border-radius: 5px;
+        }
+
+        .thumb {
+            width: 5px;
+            height: 30px;
+            background: #eb3489;
+            position: absolute;
+            transform: translate(-50%, 0);
+            border-radius: 15px;
+
+            &.show-value::after {
+                width: max-content;
+                height: 20px;
+                background: #e9e9e9;
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translate(-50%, 0);
+                text-align: center;
+                line-height: 20px;
+                padding-inline: 5px;
+                z-index: 2;
+            }
+
+            &.left {
+                left: calc(100% * var(--cutStartPercent));
+
+                &.show-value::after {
+                    content: var(--cutStartPercent-txt);
+                }
+            }
+
+            &.right {
+                left: calc(100% * var(--cutEndPercent));
+                &.show-value::after {
+                    content: var(--cutEndPercent-txt);
+                }
+            }
+
+            &.playThumb {
+                width: 15px;
+                height: 15px;
+                left: calc(100% * var(--rangePercent));
+                background: $jshsusColorDark;
+                &.show-value::after {
+                    content: var(--rangePercent-txt);
+                }
+            }
+        }
+    }
+
+    .time-container {
+        width: 100%;
+        height: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        top: 30px;
+        left: 0;
+
+        span {
+            font-size: 0.8rem;
+            color: $textColorDark;
+            user-select: none;
+            pointer-events: none;
+        }
+    }
+
+    &.disabled {
+        input {
+            pointer-events: none;
+
+            &::-webkit-slider-thumb {
+                cursor: not-allowed;
+            }
+        }
+
+        .slider {
+            .track {
+                background-image:
+                    linear-gradient(rgba(#bbbbbb, 0.1), rgba(#bbbbbb, 0.1)),
+                    linear-gradient(#bbbbbb, #bbbbbb),
+                    linear-gradient(#bbbbbb, #bbbbbb),
+                    linear-gradient(rgba(#bbbbbb, 0.1), rgba(#bbbbbb, 0.1));
+            }
+
+            .thumb {
+                background: #d8d8d8;
+
+                &.playThumb {
+                    background: #b3b3b3;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+#case_control{
+    .dt-name{
+        font-weight: bolder;
+    }
+
+    .dt-status{
+        font-weight: bolder;
+
+        &.open { color: rgb(0, 141, 24); }
+        &.closed { color: rgb(255, 0, 51); }
+    }
+}

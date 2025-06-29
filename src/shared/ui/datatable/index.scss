@@ -1,0 +1,148 @@
+.tableWrapper {
+    width: 100%;
+    height: max-content;
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+
+    .tableHeader {
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+
+        .button_wrap {
+            display: flex;
+
+            .tableButton {
+                margin-right: 0.1rem;
+            }
+        }
+
+        .input_wrap {
+            height: 30px;
+            display: flex;
+
+            .filterText {
+                position: relative;
+                margin: 0;
+                margin-right: 10px;
+                font-size: 1rem;
+                padding-block: 0.2rem;
+                line-height: calc(28px - 0.4rem);
+            }
+
+            .filterInput {
+                outline: none;
+                padding-left: 5px;
+            }
+        }
+    }
+
+    .tableContent {
+        width: 100%;
+        overflow: visible;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dataTable {
+        width: 100%;
+        height: auto;
+        table-layout: auto;
+        overflow-y: auto;
+
+        thead {
+            tr {
+                th {
+                    position: relative;
+                    padding-block: 0.5rem;
+                    padding-inline: 1rem;
+                    text-align: center;
+                    border: 1px solid rgba(#000, 0.1);
+                    border-bottom: 1px solid rgba(#000, 0.3);
+                    white-space: nowrap;
+
+                    &.dt-column-orderable {
+                        padding-right: 2.5rem;
+                        cursor: pointer;
+
+                        .dt-column-order {
+                            width: 1.5rem;
+                            height: 100%;
+                            position: absolute;
+                            top: 0;
+                            right: 0.5rem;
+                            text-align: center;
+
+                            &::before {
+                                content: '↑';
+                                left: 0;
+                            }
+                            &::after {
+                                content: '↓';
+                                right: 0;
+                            }
+
+                            &::after,
+                            &::before {
+                                width: max-content;
+                                color: rgba(0, 0, 0, 0.3);
+                                position: absolute;
+                                top: calc(50% - 2px);
+                                transform: translate(0, -50%);
+                                text-align: center;
+                                font-weight: bold;
+                            }
+                        }
+
+                        &.dt-column-ordered {
+                            &.dt-column-ordered-asc {
+                                .dt-column-order::before {
+                                    color: #555;
+                                }
+                            }
+
+                            &.dt-column-ordered-desc {
+                                .dt-column-order::after {
+                                    color: #555;
+                                }
+                            }
+                        }
+
+                        &:hover {
+                            box-shadow: 0 0 2px 1px rgba(#222, 0.1) inset;
+                        }
+                    }
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                &:nth-child(odd) {
+                    background: rgba(#888, 0.1);
+                }
+
+                td {
+                    padding: 0;
+                    padding-inline: 1rem;
+                    padding-block: 0.75rem;
+                    border: 1px solid rgba(#000, 0.2);
+                    text-align: center;
+                    white-space: nowrap;
+                }
+            }
+        }
+    }
+
+    .tablePagination {
+        height: max-content;
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: flex-end;
+        padding-top: 15px;
+    }
+}

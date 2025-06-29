@@ -1,0 +1,72 @@
+#points_userHistory {
+    .myPoint {
+        width: max-content;
+        height: auto;
+        padding-left: 1rem;
+        display: flex;
+        align-items: center;
+
+        .sum {
+            margin-right: 1.5rem;
+            font-size: 2.5rem;
+        }
+
+        .badge {
+            margin-left: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: bolder;
+            line-height: 1rem;
+            padding-inline: 0.4rem;
+            padding-block: 0.6rem;
+            border-radius: 3px;
+
+            &.plus {
+                color: #00631b;
+                background: #8affa7 !important;
+            }
+            &.minus {
+                color: #631700;
+                background: #ffcfd4 !important;
+            }
+            &.etc {
+                color: #424242;
+                background: #dfdfdf !important;
+            }
+        }
+    }
+
+    .dataTable {
+        .dt-content {
+            font-weight: bolder;
+
+            .type {
+                color: #fff;
+                padding-inline: 5px;
+                padding-block: 2px;
+                border-radius: 3px;
+                margin-right: 10px;
+
+                &.good {
+                    background: limegreen;
+                }
+                &.bad {
+                    background: red;
+                }
+            }
+
+            text-wrap: wrap;
+        }
+
+        .dt-reason {
+            width: 35rem;
+            text-overflow: ellipsis;
+        }
+
+        .selected {
+            td {
+                color: #000;
+                box-shadow: inset 0 0 0 9999px rgba(#000, 0.2) !important;
+            }
+        }
+    }
+}

@@ -1,0 +1,316 @@
+@use '~shared/styles/variables.scss' as *;
+
+#songs_view {
+    $music-size: 600px;
+
+    .card-body {
+        display: flex;
+        flex-flow: row nowrap;
+    }
+
+    .music_content {
+        width: 100%;
+        display: flex;
+        position: relative;
+        justify-content: space-between;
+        padding-inline: 100px 150px;
+
+        @media (max-width: 1500px) {
+            & {
+                padding-inline: 0;
+            }
+        }
+    }
+
+    .music_player {
+        width: 600px;
+        position: relative;
+        margin-top: 120px;
+    }
+
+    .music_selector {
+        width: 500px;
+        height: 100%;
+        padding-inline: 10px;
+
+        .week_selector {
+            width: 300px;
+
+            .week {
+                width: max-content;
+                margin: 0;
+                margin-left: 5px;
+                font-size: 1.5rem;
+                font-weight: bold;
+                cursor: pointer;
+                border-bottom: 1.5px solid #343a40;
+
+                span {
+                    font-size: 1rem;
+                    font-weight: 400;
+
+                    &.button {
+                        font-size: 1.2rem;
+                    }
+                }
+            }
+
+            .dropdown_menu {
+                width: 320px;
+                margin-top: 5px;
+                text-align: center;
+
+                filter: drop-shadow(0 5px 5px rgba(#343a40, 0.5));
+
+                a {
+                    padding-block: 5px;
+
+                    &.current {
+                        background: rgba(#343a40, 0.1);
+                    }
+
+                    &.target {
+                        background: #343a40;
+                        color: #fff;
+                    }
+                }
+
+                .month_select {
+                    padding-block: 5px;
+                    font-size: 1.1rem;
+                    font-weight: bold;
+                    display: flex;
+                    flex-flow: row wrap;
+                    justify-content: center;
+                    align-items: center;
+
+                    .month_pass {
+                        width: 30px;
+                        height: 30px;
+                        position: relative;
+                        margin-inline: 10px;
+                        cursor: pointer;
+
+                        &::after,
+                        &::before {
+                            content: '';
+                            width: 10px;
+                            height: 2px;
+                            background: #343a40;
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                        }
+
+                        &::before {
+                            transform: translate(-50%, -50%) rotate(-45deg);
+                            margin-top: -3.5px;
+                        }
+
+                        &::after {
+                            transform: translate(-50%, -50%) rotate(45deg);
+                            margin-top: 3.5px;
+                        }
+
+                        &.month_next {
+                            &::before {
+                                transform: translate(-50%, -50%) rotate(45deg);
+                            }
+
+                            &::after {
+                                transform: translate(-50%, -50%) rotate(-45deg);
+                            }
+                        }
+
+                        &.disabled {
+                            pointer-events: none;
+
+                            &::after,
+                            &::before {
+                                background: #999;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .playlist {
+            width: 100%;
+
+            .tableWrapper {
+                .tableContent {
+                    height: calc(60px * 10);
+                }
+
+                thead,
+                tbody {
+                    th,
+                    td {
+                        background: transparent;
+                        border: 0;
+                    }
+
+                    tr {
+                        background: transparent;
+                        cursor: pointer;
+
+                        td {
+                            border-bottom: 1px solid #343a40;
+                            padding-block: 7.5px;
+                            transition: background-color 0.2s;
+
+                            &:nth-child(1) {
+                                width: 40px;
+                                min-width: 40px;
+                                padding-inline: 0;
+                            }
+
+                            &:nth-child(2) {
+                                width: 400px !important;
+                                max-width: 400px;
+                                min-width: 400px;
+                                white-space: nowrap; // 한 줄로 유지
+                                overflow: hidden; // 넘치면 잘림
+                            }
+                        }
+
+                        &:nth-last-child(1) td {
+                            border: 0;
+                        }
+
+                        &:nth-child(1) td {
+                            border-bottom: 1px solid #343a40;
+                        }
+
+                        &:has(.confirmed) {
+                            .rank {
+                                background: rgba($jshsusColorLight, 1);
+                            }
+                        }
+
+                        &:hover td {
+                            background: rgba(#343a40, 0.1);
+                        }
+
+                        &.highlighted-row td {
+                            background: rgba(#343a40, 0.1);
+                        }
+                    }
+                }
+
+                th {
+                    display: none;
+                }
+
+                .songTitle {
+                    text-align: left;
+                    padding-left: 10px;
+
+                    .title_wrapper {
+                        margin: 0;
+
+                        .song_title_text {
+                            font-size: 0.8rem;
+                            display: block;
+
+                            &.song_title {
+                                font-size: 1rem;
+                                font-weight: bold;
+                            }
+                        }
+                    }
+                }
+
+                .isConfirmed {
+                    display: none;
+                }
+
+                .rank {
+                    padding-inline: 15px;
+                }
+
+                .voted {
+                    padding-inline: 10px;
+
+                    span {
+                        width: 20px;
+                        height: 20px;
+                        display: block;
+                        border: 2px solid #343a40;
+                        border-radius: 5px;
+                        transition: all 0.2s;
+                        position: relative;
+
+                        &:hover {
+                            background: rgba(#343a40, 0.2);
+                        }
+
+                        &.selected {
+                            background: #343a40;
+
+                            &::before,
+                            &::after {
+                                content: '';
+                                height: 2px;
+                                background: #fff;
+                                position: absolute;
+                                top: 50%;
+                                left: 50%;
+                            }
+
+                            &::before {
+                                width: 5px;
+                                transform: translate(-50%, -50%) rotate(45deg);
+                                margin-left: -3.5px;
+                                margin-top: 1px;
+                            }
+
+                            &::after {
+                                width: 10px;
+                                transform: translate(-50%, -50%) rotate(135deg);
+                                margin-left: 2px;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .marquee-wrapper {
+        width: 100%;
+        overflow: clip;
+        white-space: nowrap;
+        position: relative;
+    }
+
+    .marquee-content {
+        width: max-content;
+        display: flex;
+        white-space: nowrap;
+        animation: marquee 20s 4s infinite ease-in-out;
+
+        span {
+            margin-right: 30px;
+        }
+    }
+
+    @keyframes marquee {
+        0% {
+            transform: translateX(0%);
+        }
+        80% {
+            transform: translateX(-50%);
+        }
+        100% {
+            transform: translateX(-50%); /* 같은 위치에서 멈춤 */
+        }
+    }
+
+    .normal-text {
+        white-space: nowrap;
+        display: inline-block;
+    }
+}

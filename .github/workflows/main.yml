@@ -1,0 +1,49 @@
+name: Deploy React App to Lightsail
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'  # 프로젝트에 맞게 조절
+
+      - name: Create .env file for React build
+        run: |
+          echo VITE_API_BASE=${{secrets.VITE_API_BASE}} >> .env
+          echo VITE_ENV_MODE=${{secrets.VITE_ENV_MODE}} >> .env
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build React app
+        run: npm run build  # 빌드 명령어가 dist 폴더 생성하는지 확인!
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p 9988 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload dist folder via SCP
+        env:
+          SERVER_USER: ${{ secrets.SSH_USER }}
+          SERVER_IP: ${{ secrets.SSH_HOST }}
+          APP_DIR: ${{ secrets.WORK_DIR }}
+        run: |
+          scp -r -P 9988 ./dist/* $SERVER_USER@$SERVER_IP:$APP_DIR/client

@@ -1,0 +1,267 @@
+@use '~shared/styles/variables.scss' as *;
+
+.videoPlayer {
+    width: 100%;
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+
+    .player {
+        width: 100%;
+        aspect-ratio: calc(16 / (9 * 1.1));
+        position: relative;
+
+        .wrap {
+            width: 100%;
+            aspect-ratio: calc(16 / (9 * 1.1));
+            background: transparent;
+            position: absolute;
+            display: flex;
+            transition: opacity 0.3s ease-in-out;
+
+            .youtube-player {
+                width: 100%;
+                aspect-ratio: 16/9;
+                background: transparent;
+                position: absolute;
+                pointer-events: none;
+                overflow: hidden;
+                border-radius: 15px;
+
+                .img-container {
+                    width: 100%;
+                    background: transparent;
+                    display: flex;
+                    align-items: center;
+
+                    img {
+                        width: 100%;
+                        background: transparent;
+                        object-fit: cover;
+                        border-radius: 15px;
+                    }
+                }
+
+                .iframe-container {
+                    position: relative;
+                    padding-bottom: 56.25%;
+                    width: 500%;
+                    left: -200%;
+                    background: transparent;
+                    border: 0;
+
+                    iframe {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 15px;
+                    }
+                }
+
+                &.shadow {
+                    width: 90%;
+                    top: 12.5%;
+                    left: 50%;
+                    transform: translate(-50%, 0);
+                    filter: blur(10px);
+                }
+            }
+        }
+
+        &.playing {
+            .img_wrap {
+                opacity: 0;
+            }
+        }
+    }
+
+    .button_wrap {
+        width: 100%;
+        height: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-inline: 50px;
+    }
+
+    .info {
+        width: 100%;
+        margin-top: 10px;
+        position: relative;
+
+        .video-infoBox {
+            position: relative;
+            left: 50%;
+            transform: translate(-50%, 0);
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .video-title {
+            width: 80%;
+            height: 2rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .video-artist {
+            width: 60%;
+            height: 1.5rem;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-top: 0.5rem;
+            border-radius: 5px;
+        }
+    }
+
+    .controls {
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: center;
+        flex-flow: row wrap;
+        align-items: center;
+        margin-top: 20px;
+        position: relative;
+
+        .slider_wrap {
+            width: calc(80% - 50px);
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .control-button {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 1);
+            }
+        }
+
+        .play_button {
+            width: 100%;
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-around;
+            align-items: center;
+            padding-inline: 35%;
+
+            .music_button {
+                cursor: pointer;
+                color: #343a40;
+                transition: filter 0.15s;
+
+                span {
+                    font-size: 1.5rem;
+                }
+
+                &.playpause_button {
+                    span {
+                        font-size: 2rem;
+                    }
+                }
+
+                &:hover {
+                    filter: drop-shadow(0 5px 1px rgba(#343a40, 0.5));
+                }
+
+                &.disabled {
+                    color: rgba(#343a40, 0.3);
+                    pointer-events: none;
+                }
+            }
+        }
+    }
+
+    &.hidden {
+        .player {
+            .wrap {
+                .youtube-player {
+                    background: #d8d8d8;
+
+                    &.shadow {
+                        background: #f0f0f0;
+                    }
+
+                    iframe {
+                        opacity: 0;
+                    }
+
+                    img {
+                        opacity: 0;
+                    }
+                }
+            }
+        }
+
+        .info {
+            .video-infoBox {
+                background: #acf;
+            }
+
+            .video-title {
+                width: 30%;
+                background: rgba(#343a40, 0.2);
+            }
+            .video-artist {
+                width: 20%;
+                background: rgba(#343a40, 0.15);
+            }
+        }
+
+        .controls {
+            .play_button {
+                .music_button {
+                    color: rgba(#343a40, 0.3);
+                    pointer-events: none;
+                }
+            }
+        }
+    }
+}
+
+.marquee-wrapper {
+    width: 100%;
+    overflow: clip;
+    white-space: nowrap;
+    position: relative;
+}
+
+.marquee-content {
+    width: max-content;
+    display: flex;
+    white-space: nowrap;
+    animation: marquee 20s 4s infinite ease-in-out;
+
+    span {
+        margin-right: 30px;
+    }
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0%);
+    }
+    80% {
+        transform: translateX(-50%);
+    }
+    100% {
+        transform: translateX(-50%); /* 같은 위치에서 멈춤 */
+    }
+}
+
+.normal-text {
+    white-space: nowrap;
+    display: inline-block;
+}

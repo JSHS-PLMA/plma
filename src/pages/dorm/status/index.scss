@@ -1,0 +1,81 @@
+@use '~shared/styles/variables.scss' as *;
+
+#dorm_status {
+    width: 100%;
+    height: 100%;
+
+    .btn-group {
+        margin-bottom: 2rem;
+        label {
+            padding-inline: 2rem;
+        }
+    }
+
+    .table-wrap {
+        width: max-content;
+        height: auto;
+
+        .dt-layout-row {
+            margin: 0;
+        }
+
+        .tableWrapper .tableHeader {
+            display: none;
+        }
+    }
+
+    .dorm-table {
+        tr {
+            cursor: pointer;
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.03);
+            }
+        }
+
+        th {
+            background: $jshsusColorDark;
+            color: $textColorLight;
+            padding-block: 0.25rem;
+            width: 100px;
+        }
+
+        td {
+            height: 10px;
+            line-height: 10px;
+            width: 100px;
+            padding-inline: 1.75rem;
+            &:hover {
+                background: rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        th.dt-center,
+        td.dt-center {
+            text-align: center;
+            font-size: 16px;
+            text-wrap: nowrap;
+        }
+
+        td.dt-first {
+            background: $jshsusColorLight2;
+            color: $textColorLight;
+            padding-inline: 0.75rem;
+            font-weight: 700;
+        }
+
+        th.dt-first,
+        td.dt-first {
+            width: 70px;
+        }
+
+        a {
+            color: #7696ff;
+            text-decoration: none;
+
+            &:hover {
+                color: #576db6;
+            }
+        }
+    }
+}

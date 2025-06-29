@@ -219,6 +219,7 @@ function Songs_View() {
 
         const res = await postData(`/api/remote/songs/${musicData.id}/vote`, {
             vote: !musicData.userVoted,
+            iamId: user.iamId,
         });
 
         const afterPlayList = [...playList]; // 새 배열 생성

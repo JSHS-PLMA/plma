@@ -18,7 +18,9 @@ function MyDorm_Repair() {
     const [tableData, setTableData] = useState([]);
 
     async function fetchReports() {
-        const reports = await getData('/api/dorms/reports');
+        const reports = await getData('/api/dorms/reports', {
+            userId: user.userId,
+        });
         setupTable(reports);
     }
 
@@ -137,7 +139,7 @@ function MyDorm_Repair() {
         e.preventDefault();
 
         const formData = new FormData();
-        formData.append('id', user.id); // 사용자 id 추가
+        formData.append('id', user.userId); // 사용자 id 추가
         formData.append('description', description); // 설명 추가
         formData.append('image', uploadedImage); // 이미지 파일 추가
 

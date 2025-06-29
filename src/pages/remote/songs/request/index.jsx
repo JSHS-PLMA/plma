@@ -9,6 +9,8 @@ import MySwal from '~shared/ui/sweetalert';
 
 import VideoPlayer from '~shared/ui/videoPlayer';
 
+import { useUser } from '~shared/scripts/userContextProvider';
+
 const TITLE = import.meta.env.VITE_TITLE;
 
 function Songs_Request() {
@@ -21,6 +23,8 @@ function Songs_Request() {
 
     const [checked, setChecked] = useState(false);
     const [coolDown, setCoolDown] = useState(false);
+
+    const { user } = useUser();
 
     useEffect(() => {
         init();
@@ -59,12 +63,13 @@ function Songs_Request() {
     async function submitSong() {
         setCoolDown(true);
 
+        console.log(user.iamId);
         try {
             const res = await postData('/api/remote/songs', {
                 ...currentMusic,
                 start: range[0],
                 end: range[1],
-                requester: 594,
+                iamId: user.iamId,
             });
 
             MySwal.fire({

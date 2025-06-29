@@ -67,7 +67,7 @@ export const UserProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        if (import.meta.env.MODE == 'production') init();
+        if (import.meta.env.VITE_ENV_MODE == 'production') init();
     }, []);
 
     return (

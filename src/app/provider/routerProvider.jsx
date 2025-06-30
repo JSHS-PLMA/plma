@@ -132,7 +132,7 @@ function AppRouterInner() {
                       }
         );
 
-        console.log(filteredRoutes);
+        console.log(user.permissions, filteredRoutes);
 
         return createBrowserRouter([
             {

@@ -136,8 +136,6 @@ function AppRouterInner() {
                       }
         );
 
-        console.log(user.permissions, filteredRoutes);
-
         return createBrowserRouter([
             {
                 element: <Layout />,

@@ -132,6 +132,8 @@ function AppRouterInner() {
                       }
         );
 
+        console.log(filteredRoutes);
+
         return createBrowserRouter([
             {
                 element: <Layout />,

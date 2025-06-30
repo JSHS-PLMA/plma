@@ -119,13 +119,8 @@ function AppRouterInner() {
     const { user } = useUser();
 
     const router = useMemo(() => {
-        const filteredRoutes = routesWithPermissions
-            .filter(
-                (route) =>
-                    !route.pathKey.permission ||
-                    user.permissions.has(route.pathKey.permission)
-            )
-            .map(({ pathKey, element }) =>
+        const filteredRoutes = routesWithPermissions.map(
+            ({ pathKey, element }) =>
                 !pathKey.permission || user.permissions.has(pathKey.permission)
                     ? {
                           path: pathKey.link,
@@ -135,7 +130,7 @@ function AppRouterInner() {
                           path: pathKey.link,
                           element: <Page403 />,
                       }
-            );
+        );
 
         return createBrowserRouter([
             {

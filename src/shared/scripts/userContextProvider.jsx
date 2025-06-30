@@ -82,9 +82,7 @@ export const UserProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        if (import.meta.env.VITE_ENV_MODE == 'production') {
-            init();
-        }
+        init();
     }, []);
 
     return (

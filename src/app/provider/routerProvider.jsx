@@ -119,6 +119,10 @@ function AppRouterInner() {
     const { user } = useUser();
 
     const router = useMemo(() => {
+        if (user.isDefaultValue) {
+            return null;
+        }
+
         const filteredRoutes = routesWithPermissions.map(
             ({ pathKey, element }) =>
                 !pathKey.permission || user.permissions.has(pathKey.permission)
@@ -144,6 +148,10 @@ function AppRouterInner() {
             },
         ]);
     }, [user]);
+
+    if (user.isDefaultValue) {
+        return <div>Loading...</div>;
+    }
 
     return <RouterProvider router={router} />;
 }

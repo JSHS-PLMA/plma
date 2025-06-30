@@ -57,13 +57,14 @@ export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(
         import.meta.env.VITE_ENV_MODE == 'development'
             ? {
-                  permissions: userType['admin'],
+                  permissions: userType['guest'],
                   isLogined: import.meta.env.VITE_ENV_MODE == 'development',
                   name: '강재환',
                   stuid: '9988',
                   iamId: 594,
                   userId: 32020,
                   plmaId: 0,
+                  isDefaultValue: true,
               }
             : {
                   permissions: userType['guest'],

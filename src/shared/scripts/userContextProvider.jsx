@@ -57,7 +57,7 @@ export const UserProvider = ({ children }) => {
     const [user, setUser] = useState({
         permissions:
             import.meta.env.VITE_ENV_MODE == 'development'
-                ? userType['student']
+                ? userType['admin']
                 : new Set([]),
         isLogined: import.meta.env.VITE_ENV_MODE == 'development',
         name: '강재환',

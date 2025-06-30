@@ -3,6 +3,7 @@ import {
     RouterProvider,
     Outlet,
     useLocation,
+    Navigate,
 } from 'react-router-dom';
 
 import { UserProvider, useUser } from '~shared/scripts/userContextProvider';
@@ -45,6 +46,7 @@ import IAM_Accounts from '~pages/iam/accounts';
 
 import Page404 from '~pages/404';
 import Page403 from '~pages/403';
+import Page401 from '~pages/401';
 
 // ###
 
@@ -57,6 +59,20 @@ function Layout() {
     const location = useLocation();
     const isFullScreen = location.pathname === pathKeys.about.root().link;
     const { user } = useUser();
+
+    if (!user.isLogined) {
+        return (
+            <>
+                <Sidebar userPermissions={user.permissions} />
+                <Navbar />
+                <div className={isFullScreen ? 'fullScreen' : 'panel'}>
+                    <div className="panel_wrap">
+                        <Outlet />
+                    </div>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -102,14 +118,13 @@ const routesWithPermissions = [
     { pathKey: pathKeys.remote.case.history(), element: <Case_History /> },
     { pathKey: pathKeys.remote.songs.view(), element: <Songs_View /> },
     { pathKey: pathKeys.remote.songs.request(), element: <Songs_Request /> },
+
+    { pathKey: pathKeys.page403(), element: <Page403 /> },
+    { pathKey: pathKeys.page401(), element: <Page401 /> },
 ];
 
 function AppRouterInner() {
     const { user } = useUser();
-
-    if (!user || !user.permissions) {
-        return <div>Loading...</div>;
-    }
 
     const router = useMemo(() => {
         const filteredRoutes = routesWithPermissions

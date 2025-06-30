@@ -66,7 +66,7 @@ function Layout() {
             <Navbar />
             <div className={isFullScreen ? 'fullScreen' : 'panel'}>
                 <div className="panel_wrap">
-                    {!user.Logined ? (
+                    {!user.isLogined ? (
                         <Navigate to="/401/" replace />
                     ) : (
                         <Outlet />

@@ -60,9 +60,7 @@ function Layout() {
     const isFullScreen = location.pathname === pathKeys.about.root().link;
     const { user } = useUser();
 
-    useEffect(() => {
-        console.log(user);
-    }, [user]);
+    if (user.isDefaultValue) return null;
 
     return (
         <>

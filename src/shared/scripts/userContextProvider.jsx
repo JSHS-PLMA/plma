@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 
 const userType = {
-    guest: new Set(['']),
+    guest: new Set([]),
     student: new Set([
         'viewMyPointsView',
 
@@ -54,18 +54,23 @@ export const useUser = () => useContext(UserContext);
 
 // Provider
 export const UserProvider = ({ children }) => {
-    const [user, setUser] = useState({
-        permissions:
-            import.meta.env.VITE_ENV_MODE == 'development'
-                ? userType['admin']
-                : new Set([]),
-        isLogined: import.meta.env.VITE_ENV_MODE == 'development',
-        name: '강재환',
-        stuid: '9988',
-        iamId: 594,
-        userId: 32020,
-        plmaId: 0,
-    });
+    const [user, setUser] = useState(
+        import.meta.env.VITE_ENV_MODE == 'development'
+            ? {
+                  permissions: userType['admin'],
+                  isLogined: import.meta.env.VITE_ENV_MODE == 'development',
+                  name: '강재환',
+                  stuid: '9988',
+                  iamId: 594,
+                  userId: 32020,
+                  plmaId: 0,
+              }
+            : {
+                  permissions: userType['guest'],
+                  isLogined: false,
+                  isDefaultValue: true,
+              }
+    );
 
     async function init() {
         const data = (await axios.get('/api/check-session')).data;

@@ -60,27 +60,17 @@ function Layout() {
     const isFullScreen = location.pathname === pathKeys.about.root().link;
     const { user } = useUser();
 
-    if (!user.isLogined) {
-        return (
-            <>
-                <Sidebar userPermissions={user.permissions} />
-                <Navbar />
-                <div className={isFullScreen ? 'fullScreen' : 'panel'}>
-                    <div className="panel_wrap">
-                        <Outlet />
-                    </div>
-                </div>
-            </>
-        );
-    }
-
     return (
         <>
             <Sidebar userPermissions={user.permissions} />
             <Navbar />
             <div className={isFullScreen ? 'fullScreen' : 'panel'}>
                 <div className="panel_wrap">
-                    <Outlet />
+                    {!user.Logined ? (
+                        <Navigate to="/401/" replace />
+                    ) : (
+                        <Outlet />
+                    )}
                 </div>
             </div>
         </>

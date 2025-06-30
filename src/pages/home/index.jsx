@@ -40,6 +40,8 @@ function Home() {
                         user.permissions.has(pathObj.permission)))
         );
 
+        console.log(firstAccessible);
+
         if (firstAccessible) {
             navigate(firstAccessible.link, { replace: true });
         } else {

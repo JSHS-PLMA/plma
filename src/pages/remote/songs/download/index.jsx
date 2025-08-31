@@ -244,7 +244,7 @@ function Songs_Download() {
         setPlayList(afterPlayList);
     }
 
-    function selectAll(songsList){
+    function selectAll(songsList) {
         let newSelectedSongs = [...selectedSongs];
     }
 
@@ -336,7 +336,7 @@ function Songs_Download() {
                                             rowPerPage: 10,
                                             search: false,
                                             highlightRowIndex: currentMusicIdx,
-                                            button: [<Button onClick={}></Button>],
+                                            button: [<Button></Button>],
                                         }}
                                         onClick={songClick}
                                         focus={currentMusicIdx || 0}

@@ -40,6 +40,7 @@ import Case_History from '~pages/remote/case/history';
 
 import Songs_View from '~pages/remote/songs/view';
 import Songs_Request from '~pages/remote/songs/request';
+import Songs_Download from '~pages/remote/songs/download';
 
 import PLMA_Accounts from '~pages/plma/accounts';
 import IAM_Accounts from '~pages/iam/accounts';
@@ -110,6 +111,7 @@ const routesWithPermissions = [
     { pathKey: pathKeys.remote.case.history(), element: <Case_History /> },
     { pathKey: pathKeys.remote.songs.view(), element: <Songs_View /> },
     { pathKey: pathKeys.remote.songs.request(), element: <Songs_Request /> },
+    { pathKey: pathKeys.remote.songs.download(), element: <Songs_Download /> },
 
     { pathKey: pathKeys.page403(), element: <Page403 /> },
     { pathKey: pathKeys.page401(), element: <Page401 /> },

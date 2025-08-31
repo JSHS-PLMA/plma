@@ -185,7 +185,7 @@ function VideoPlayer({
 
         const diff = time - shadowTime;
 
-        if (Math.abs(diff) >= 0.05) {
+        if (Math.abs(diff) >= 0.02) {
             playerShadow.setPlaybackRate(1 + Math.round(diff / 0.05) * 0.05);
         } else {
             if (playerShadow.getPlaybackRate() != 1)

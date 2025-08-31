@@ -169,6 +169,12 @@ export const pathKeys = {
                     permission: 'viewRemoteSongsRequest',
                 };
             },
+            download() {
+                return {
+                    link: pathKeys.remote.songs.root().concat('download/'),
+                    permission: 'viewRemoteSongsDownload',
+                };
+            },
         },
     },
     plma: {

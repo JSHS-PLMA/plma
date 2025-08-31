@@ -171,6 +171,12 @@ export const config = [
                         icon: 'music',
                         name: '기상송 신청',
                     },
+
+                    {
+                        pathKey: pathKeys.remote.songs.download(),
+                        icon: 'download',
+                        name: '기상송 다운로드',
+                    },
                 ],
             },
         ],

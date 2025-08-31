@@ -35,6 +35,7 @@ const userType = {
         'viewRemoteCaseHistory',
         'viewRemoteSongsView',
         'viewRemoteSongsRequest',
+        'viewRemoteSongsDownload',
 
         'viewPLMAAccounts',
         'viewIAMAccounts',

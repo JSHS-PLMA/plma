@@ -3,12 +3,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import './index.scss';
 
-import { Card, Dropdown, ToggleButton } from 'react-bootstrap';
+import { Card, Dropdown, ToggleButton, Button } from 'react-bootstrap';
 import DataTable from '~shared/ui/datatable';
 
 import { getData, postData } from '~shared/scripts/requestData.js';
 import moment from 'moment';
-import VideoPlayer from '~shared/ui/videoPlayer';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -61,7 +60,7 @@ const Buttons = ({
     );
 };
 
-function Songs_View() {
+function Songs_Download() {
     const [columns, setColumns] = useState([]);
     const [tableData, setTableData] = useState([]);
 
@@ -87,6 +86,8 @@ function Songs_View() {
     const [currentMusicIdx, setCurrentMusicIdx] = useState();
 
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
+
+    const [selectedSongs, setSelectedSongs] = useState([]);
 
     const { user } = useUser();
 
@@ -196,6 +197,7 @@ function Songs_View() {
         else setCurrentMusic(null);
 
         updateTableData(playList);
+        setSelectedSongs([]);
     }, [playList, currentMusicIdx]);
 
     async function getPlayListWeek(targetMonth) {
@@ -242,35 +244,19 @@ function Songs_View() {
         setPlayList(afterPlayList);
     }
 
+    function selectAll(songsList){
+        let newSelectedSongs = [...selectedSongs];
+    }
+
     return (
         <>
-            <div id="songs_view">
+            <div id="songs_download">
                 <Card>
                     <Card.Header>
                         <Card.Title>기상송 조회</Card.Title>
                     </Card.Header>
                     <Card.Body>
                         <div className="music_content">
-                            <div className="music_player">
-                                <VideoPlayer
-                                    currentMusic={currentMusic}
-                                    Buttons={
-                                        <Buttons
-                                            isVoteActive={
-                                                currentMusic?.userVoted
-                                            }
-                                            adminMode={adminMode}
-                                            onVoteClick={() => {
-                                                songVote(
-                                                    currentMusic,
-                                                    currentMusicIdx
-                                                );
-                                            }}
-                                        />
-                                    }
-                                />
-                            </div>
-
                             <div className="music_selector">
                                 <div className="week_selector">
                                     <Dropdown
@@ -350,6 +336,7 @@ function Songs_View() {
                                             rowPerPage: 10,
                                             search: false,
                                             highlightRowIndex: currentMusicIdx,
+                                            button: [<Button onClick={}></Button>],
                                         }}
                                         onClick={songClick}
                                         focus={currentMusicIdx || 0}
@@ -364,4 +351,4 @@ function Songs_View() {
     );
 }
 
-export default Songs_View;
+export default Songs_Download;

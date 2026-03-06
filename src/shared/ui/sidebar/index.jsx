@@ -178,6 +178,9 @@ function SideBar(props) {
                             />
                         ))}
                 </div>
+                <div className="footer>
+                <p>&copy; 2026 IDBI<br/>서비스 호스팅 업체: 아이디비아이<br/>사업자 등록번호: 332-44-01176<br/>사업자 대표: 강재환</p>
+            </div>
             </div>
         </div>
     );
